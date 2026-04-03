@@ -3,7 +3,7 @@ COPY . /home/gradle/src
 WORKDIR /home/gradle/src
 RUN gradle build --no-daemon -x test -Dorg.gradle.jvmargs="-Xmx512m"
 
-FROM openjdk:17-jdk-slim
+FROM eclipse-temurin:17-jre-jammy
 WORKDIR /app
 EXPOSE 8080
 
