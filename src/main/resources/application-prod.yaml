@@ -3,6 +3,10 @@ spring:
     activate:
       on-profile: prod
 
+custom:
+  env-name: "Deploy Mode"
+  debug-mode: true
+
   datasource:
     url: ${DB_URL}
     username: ${DB_USERNAME}
