@@ -1,0 +1,18 @@
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+
+  swagger-ui:
+    path: /SWENG3-docs
+    groups-order: asc
+    operations-sorter: method
+    disable-swagger-default-url: true
+    display-operation-id: false
+  api-docs:
+    path: /SWENG3-api-docs
