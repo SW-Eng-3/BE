@@ -3,15 +3,21 @@ spring:
     activate:
       on-profile: prod
 
-custom:
-  env-name: "Deploy Mode"
-  debug-mode: true
-
   datasource:
     url: ${DB_URL}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
 
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        show_sql: true
+
+springdoc:
   swagger-ui:
     path: /SWENG3-docs
     groups-order: asc
@@ -20,3 +26,7 @@ custom:
     display-operation-id: false
   api-docs:
     path: /SWENG3-api-docs
+
+custom:
+  env-name: "Deploy Mode (Supabase)"
+  debug-mode: false

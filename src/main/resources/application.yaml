@@ -2,6 +2,9 @@ spring:
   application:
     name: backend
 
+  profiles:
+    active: local
+
 springdoc:
   swagger-ui:
     path: /SWENG3-docs
@@ -11,3 +14,7 @@ springdoc:
     display-operation-id: false
   api-docs:
     path: /SWENG3-api-docs
+
+custom:
+  env-name: "Base Environment"
+  debug-mode: false
