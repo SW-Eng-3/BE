@@ -5,7 +5,7 @@ RUN gradle build --no-daemon -x test -Dorg.gradle.jvmargs="-Xmx512m"
 
 FROM eclipse-temurin:17-jre-jammy
 WORKDIR /app
-EXPOSE 8080
+EXPOSE 10000
 
 COPY --from=build /home/gradle/src/build/libs/*.jar app.jar
 

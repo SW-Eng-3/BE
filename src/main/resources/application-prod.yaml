@@ -11,22 +11,36 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
-        show_sql: true
+        format_sql: false
+        show_sql: false
+
+  mail:
+    host: smtp.naver.com
+    port: 465
+    username: ${NAVER_EMAIL}
+    password: ${NAVER_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          ssl:
+            enable: true
+            trust: smtp.naver.com
+          socketFactory:
+            class: javax.net.ssl.SSLSocketFactory
+            fallback: false
+            port: 465
 
 springdoc:
   swagger-ui:
-    path: /SWENG3-docs
-    groups-order: asc
-    operations-sorter: method
-    disable-swagger-default-url: true
-    display-operation-id: false
+    enabled: false
   api-docs:
-    path: /SWENG3-api-docs
+    enabled: false
 
 custom:
-  env-name: "Deploy Mode (Supabase)"
+  env-name: "Production Mode"
   debug-mode: false
