@@ -35,11 +35,20 @@ spring:
             fallback: false
             port: 465
 
+#springdoc:
+#  swagger-ui:
+#    enabled: false
+#  api-docs:
+#    enabled: false
+
 springdoc:
   swagger-ui:
-    enabled: false
+    path: /SWENG3-docs
+    groups-order: asc
+    operations-sorter: method
+    disable-swagger-default-url: true
   api-docs:
-    enabled: false
+    path: /SWENG3-api-docs
 
 custom:
   env-name: "Production Mode"

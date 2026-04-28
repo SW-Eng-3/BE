@@ -19,7 +19,7 @@ public class EmailService {
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
             helper.setTo(toEmail);
             helper.setSubject("[Grad-Link] 회원가입 인증 코드입니다.");
-            helper.setFrom("rla005@naver.com");
+            helper.setFrom("Grad-Link <rla005@naver.com>");
 
             String htmlContent = "<div style=\"font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; max-width: 500px; margin: 0 auto; padding: 40px 20px; border: 1px solid #eee; border-radius: 10px;\">" +
                     "    <h2 style=\"color: #007bff; margin-bottom: 30px; text-align: center;\">Grad-Link</h2>" +
