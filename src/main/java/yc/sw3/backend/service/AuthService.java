@@ -20,20 +20,41 @@ public class AuthService {
     private final BCryptPasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final EmailService emailService;
-    
-    // 이메일 인증 코드를 임시 저장 (운영 환경에서는 Redis 권장)
-    private final java.util.Map<String, String> verificationCodes = new java.util.concurrent.ConcurrentHashMap<>();
+
+    private static class VerificationInfo {
+        String code;
+        long createdAt;
+
+        VerificationInfo(String code) {
+            this.code = code;
+            this.createdAt = System.currentTimeMillis();
+        }
+
+        boolean isExpired() {
+            return System.currentTimeMillis() - createdAt > 5 * 60 * 1000; // 5분
+        }
+    }
+
+    private final java.util.Map<String, VerificationInfo> verificationCodes = new java.util.concurrent.ConcurrentHashMap<>();
 
     @Transactional
     public void sendCode(String email) {
-        String code = String.valueOf((int)(Math.random() * 899999) + 100000); // 6자리 코드
-        verificationCodes.put(email, code);
+        String code = String.valueOf((int)(Math.random() * 899999) + 100000);
+        verificationCodes.put(email, new VerificationInfo(code));
         emailService.sendVerificationCode(email, code);
     }
 
     public boolean verifyCode(String email, String code) {
-        String savedCode = verificationCodes.get(email);
-        return savedCode != null && savedCode.equals(code);
+        VerificationInfo info = verificationCodes.get(email);
+        if (info == null || info.isExpired()) {
+            verificationCodes.remove(email);
+            return false;
+        }
+        boolean isValid = info.code.equals(code);
+        if (isValid) {
+            verificationCodes.remove(email);
+        }
+        return isValid;
     }
 
     @Transactional
@@ -49,13 +70,13 @@ public class AuthService {
                 .role(request.getRole())
                 .isVerified(false)
                 .build();
-        
+
         User savedUser = userRepository.save(user);
 
         Profile profile = Profile.builder()
                 .user(savedUser)
                 .build();
-        
+
         profileRepository.save(profile);
     }
 
