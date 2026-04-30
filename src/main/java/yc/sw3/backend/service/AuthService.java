@@ -20,20 +20,43 @@ public class AuthService {
     private final BCryptPasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final EmailService emailService;
-    
-    // 이메일 인증 코드를 임시 저장 (운영 환경에서는 Redis 권장)
-    private final java.util.Map<String, String> verificationCodes = new java.util.concurrent.ConcurrentHashMap<>();
+
+    private static class VerificationInfo {
+        String code;
+        long createdAt;
+
+        VerificationInfo(String code) {
+            this.code = code;
+            this.createdAt = System.currentTimeMillis();
+        }
+
+        boolean isExpired() {
+            return System.currentTimeMillis() - createdAt > 5 * 60 * 1000; // 5분
+        }
+    }
+
+    private final java.util.Map<String, VerificationInfo> verificationCodes = new java.util.concurrent.ConcurrentHashMap<>();
 
     @Transactional
     public void sendCode(String email) {
-        String code = String.valueOf((int)(Math.random() * 899999) + 100000); // 6자리 코드
-        verificationCodes.put(email, code);
+        String code = String.valueOf((int)(Math.random() * 899999) + 100000);
+        verificationCodes.put(email, new VerificationInfo(code));
         emailService.sendVerificationCode(email, code);
     }
 
+    @Transactional
     public boolean verifyCode(String email, String code) {
-        String savedCode = verificationCodes.get(email);
-        return savedCode != null && savedCode.equals(code);
+        VerificationInfo info = verificationCodes.get(email);
+        if (info == null || info.isExpired()) {
+            verificationCodes.remove(email);
+            return false;
+        }
+        boolean isValid = info.code.equals(code);
+        if (isValid) {
+            verificationCodes.remove(email);
+            userRepository.findByEmail(email).ifPresent(User::verify);
+        }
+        return isValid;
     }
 
     @Transactional
@@ -49,13 +72,14 @@ public class AuthService {
                 .role(request.getRole())
                 .isVerified(false)
                 .build();
-        
+
         User savedUser = userRepository.save(user);
 
         Profile profile = Profile.builder()
                 .user(savedUser)
+                .points(0)
                 .build();
-        
+
         profileRepository.save(profile);
     }
 
@@ -67,7 +91,7 @@ public class AuthService {
             throw new IllegalArgumentException("Invalid password");
         }
 
-        String token = jwtTokenProvider.createToken(user.getId(), user.getEmail());
+        String token = jwtTokenProvider.createToken(user.getId(), user.getEmail(), user.getRole());
 
         return AuthDto.TokenResponse.builder()
                 .accessToken(token)
@@ -87,11 +111,29 @@ public class AuthService {
                 .name(user.getName())
                 .role(user.getRole())
                 .major(profile.getMajor())
+                .majorDescription(profile.getMajor() != null ? profile.getMajor().getDescription() : null)
                 .currentCompany(profile.getCurrentCompany())
                 .jobCategory(profile.getJobCategory())
+                .jobCategoryDescription(profile.getJobCategory() != null ? profile.getJobCategory().getDescription() : null)
                 .country(profile.getCountry())
+                .countryDescription(profile.getCountry() != null ? profile.getCountry().getDescription() : null)
                 .bio(profile.getBio())
+                .points(profile.getPoints())
                 .build();
+    }
+
+    @Transactional
+    public void updateProfile(UUID userId, AuthDto.ProfileUpdateRequest request) {
+        Profile profile = profileRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Profile not found"));
+
+        profile.update(
+                request.getMajor(),
+                request.getCurrentCompany(),
+                request.getJobCategory(),
+                request.getCountry(),
+                request.getBio()
+        );
     }
 
     @Transactional

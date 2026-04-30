@@ -37,6 +37,13 @@ public class AuthController {
         return ResponseEntity.ok(authService.getProfile(userId));
     }
 
+    @Operation(summary = "프로필 수정", description = "자신의 프로필 정보를 수정합니다.")
+    @PutMapping("/users/{userId}/profile")
+    public ResponseEntity<Void> updateProfile(@PathVariable UUID userId, @RequestBody AuthDto.ProfileUpdateRequest request) {
+        authService.updateProfile(userId, request);
+        return ResponseEntity.ok().build();
+    }
+
     @Operation(summary = "가입 승인", description = "관리자가 증빙 서류 검토 후 가입을 승인합니다.")
     @PatchMapping("/admin/users/{userId}/status")
     public ResponseEntity<Void> approveUser(@PathVariable UUID userId) {

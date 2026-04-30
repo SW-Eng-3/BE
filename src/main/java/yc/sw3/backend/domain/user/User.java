@@ -37,11 +37,22 @@ public class User {
     @Column(name = "is_verified")
     private boolean isVerified;
 
+    @Column(name = "restricted_until")
+    private LocalDateTime restrictedUntil;
+
     @CreatedDate
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
     public void verify() {
         this.isVerified = true;
+    }
+
+    public void restrict(int days) {
+        this.restrictedUntil = LocalDateTime.now().plusDays(days);
+    }
+
+    public boolean isRestricted() {
+        return restrictedUntil != null && restrictedUntil.isAfter(LocalDateTime.now());
     }
 }

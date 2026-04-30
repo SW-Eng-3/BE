@@ -6,4 +6,5 @@ import java.util.UUID;
 
 public interface PostRepository extends JpaRepository<Post, UUID> {
     List<Post> findAllByOrderByCreatedAtDesc();
+    List<Post> findByCategoryOrderByCreatedAtDesc(PostCategory category);
 }

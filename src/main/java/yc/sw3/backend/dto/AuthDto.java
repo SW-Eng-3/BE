@@ -1,7 +1,7 @@
 package yc.sw3.backend.dto;
 
 import lombok.*;
-import yc.sw3.backend.domain.user.Role;
+import yc.sw3.backend.domain.user.*;
 import java.util.UUID;
 
 public class AuthDto {
@@ -48,10 +48,25 @@ public class AuthDto {
         private String email;
         private String name;
         private Role role;
-        private String major;
+        private Major major;
+        private String majorDescription;
         private String currentCompany;
-        private String jobCategory;
-        private String country;
+        private JobCategory jobCategory;
+        private String jobCategoryDescription;
+        private Country country;
+        private String countryDescription;
+        private String bio;
+        private int points;
+    }
+
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class ProfileUpdateRequest {
+        private Major major;
+        private String currentCompany;
+        private JobCategory jobCategory;
+        private Country country;
         private String bio;
     }
 }

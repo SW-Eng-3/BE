@@ -7,6 +7,7 @@ import yc.sw3.backend.domain.community.*;
 import yc.sw3.backend.domain.user.User;
 import yc.sw3.backend.domain.user.UserRepository;
 import yc.sw3.backend.dto.PostDto;
+import yc.sw3.backend.domain.gamification.PointReason;
 
 import java.util.List;
 import java.util.UUID;
@@ -20,11 +21,16 @@ public class CommunityService {
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
     private final UserRepository userRepository;
+    private final GamificationService gamificationService;
 
     @Transactional
     public UUID createPost(UUID authorId, PostDto.CreateRequest request) {
         User author = userRepository.findById(authorId)
                 .orElseThrow(() -> new IllegalArgumentException("Author not found"));
+
+        if (author.isRestricted()) {
+            throw new IllegalStateException("활동이 제한된 사용자입니다. 제한 만료일: " + author.getRestrictedUntil());
+        }
 
         Post post = Post.builder()
                 .author(author)
@@ -35,11 +41,21 @@ public class CommunityService {
                 .isPinned(false)
                 .build();
 
-        return postRepository.save(post).getId();
+        UUID postId = postRepository.save(post).getId();
+
+        gamificationService.awardPoints(authorId, 10, PointReason.POST_CREATED);
+
+        return postId;
     }
 
-    public List<PostDto.Response> getPosts() {
-        return postRepository.findAllByOrderByCreatedAtDesc().stream()
+    public List<PostDto.Response> getPosts(PostCategory category) {
+        List<Post> posts;
+        if (category != null) {
+            posts = postRepository.findByCategoryOrderByCreatedAtDesc(category);
+        } else {
+            posts = postRepository.findAllByOrderByCreatedAtDesc();
+        }
+        return posts.stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
@@ -51,8 +67,27 @@ public class CommunityService {
     }
 
     @Transactional
-    public void deletePost(UUID postId) {
-        postRepository.deleteById(postId);
+    public void updatePost(UUID userId, UUID postId, PostDto.CreateRequest request) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new IllegalArgumentException("Post not found"));
+        
+        if (!post.getAuthor().getId().equals(userId)) {
+            throw new IllegalStateException("수정 권한이 없습니다.");
+        }
+
+        post.update(request.getTitle(), request.getContent(), request.getCategory(), request.isAnonymous());
+    }
+
+    @Transactional
+    public void deletePost(UUID userId, UUID postId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new IllegalArgumentException("Post not found"));
+        
+        if (!post.getAuthor().getId().equals(userId)) {
+            throw new IllegalStateException("삭제 권한이 없습니다.");
+        }
+        
+        postRepository.delete(post);
     }
 
     @Transactional
@@ -69,6 +104,10 @@ public class CommunityService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
+        if (user.isRestricted()) {
+            throw new IllegalStateException("활동이 제한된 사용자입니다. 제한 만료일: " + user.getRestrictedUntil());
+        }
+
         Comment comment = Comment.builder()
                 .post(post)
                 .user(user)
@@ -77,6 +116,8 @@ public class CommunityService {
                 .build();
 
         commentRepository.save(comment);
+
+        gamificationService.awardPoints(userId, 3, PointReason.COMMENT_CREATED);
     }
 
     @Transactional
