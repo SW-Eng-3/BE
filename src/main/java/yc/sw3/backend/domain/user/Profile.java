@@ -25,15 +25,34 @@ public class Profile {
     @JoinColumn(name = "user_id")
     private User user;
 
-    private String major;
+    @Enumerated(EnumType.STRING)
+    private Major major;
     private String currentCompany;
-    private String jobCategory;
-    private String country;
+    @Enumerated(EnumType.STRING)
+    private JobCategory jobCategory;
+    @Enumerated(EnumType.STRING)
+    private Country country;
     
     @Column(columnDefinition = "TEXT")
     private String bio;
 
+    @Builder.Default
+    @Column(nullable = false)
+    private int points = 0;
+
     @LastModifiedDate
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    public void addPoints(int amount) {
+        this.points += amount;
+    }
+
+    public void update(Major major, String currentCompany, JobCategory jobCategory, Country country, String bio) {
+        this.major = major;
+        this.currentCompany = currentCompany;
+        this.jobCategory = jobCategory;
+        this.country = country;
+        this.bio = bio;
+    }
 }
