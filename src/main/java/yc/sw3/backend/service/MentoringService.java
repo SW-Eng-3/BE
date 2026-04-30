@@ -20,9 +20,11 @@ public class MentoringService {
     private final MentoringRequestRepository mentoringRequestRepository;
     private final MentorScheduleRepository scheduleRepository;
     private final UserRepository userRepository;
+    private final GamificationService gamificationService;
 
     @Transactional
     public void applyMentoring(UUID menteeId, MentoringDto.ApplyRequest request) {
+        // ... (existing code)
         User mentee = userRepository.findById(menteeId)
                 .orElseThrow(() -> new IllegalArgumentException("Mentee not found"));
         User mentor = userRepository.findById(request.getMentorId())
@@ -54,10 +56,36 @@ public class MentoringService {
     }
 
     @Transactional
-    public void updateStatus(UUID requestId, MentoringStatus status) {
+    public void cancelMentoring(UUID userId, UUID requestId) {
         MentoringRequest mentoringRequest = mentoringRequestRepository.findById(requestId)
                 .orElseThrow(() -> new IllegalArgumentException("Request not found"));
+        
+        if (!mentoringRequest.getMentee().getId().equals(userId)) {
+            throw new IllegalStateException("본인이 신청한 멘토링만 취소할 수 있습니다.");
+        }
+        
+        mentoringRequest.updateStatus(MentoringStatus.CANCELLED);
+    }
+
+    @Transactional
+    public void updateStatus(UUID userId, UUID requestId, MentoringStatus status) {
+        MentoringRequest mentoringRequest = mentoringRequestRepository.findById(requestId)
+                .orElseThrow(() -> new IllegalArgumentException("Request not found"));
+        
+        // 멘토 본인만 수락/거절/완료 가능
+        if (!mentoringRequest.getMentor().getId().equals(userId)) {
+            throw new IllegalStateException("권한이 없습니다.");
+        }
+
         mentoringRequest.updateStatus(status);
+
+        // 멘토링 완료 시 포인트 지급
+        if (status == MentoringStatus.COMPLETED) {
+            // 멘토에게 50점 지급
+            gamificationService.awardPoints(mentoringRequest.getMentor().getId(), 50, yc.sw3.backend.domain.gamification.PointReason.MENTORING_COMPLETED);
+            // 멘티에게 10점 지급
+            gamificationService.awardPoints(mentoringRequest.getMentee().getId(), 10, yc.sw3.backend.domain.gamification.PointReason.MENTORING_COMPLETED);
+        }
     }
 
     @Transactional

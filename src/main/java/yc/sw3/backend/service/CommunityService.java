@@ -28,6 +28,10 @@ public class CommunityService {
         User author = userRepository.findById(authorId)
                 .orElseThrow(() -> new IllegalArgumentException("Author not found"));
 
+        if (author.isRestricted()) {
+            throw new IllegalStateException("활동이 제한된 사용자입니다. 제한 만료일: " + author.getRestrictedUntil());
+        }
+
         Post post = Post.builder()
                 .author(author)
                 .title(request.getTitle())
@@ -44,8 +48,14 @@ public class CommunityService {
         return postId;
     }
 
-    public List<PostDto.Response> getPosts() {
-        return postRepository.findAllByOrderByCreatedAtDesc().stream()
+    public List<PostDto.Response> getPosts(PostCategory category) {
+        List<Post> posts;
+        if (category != null) {
+            posts = postRepository.findByCategoryOrderByCreatedAtDesc(category);
+        } else {
+            posts = postRepository.findAllByOrderByCreatedAtDesc();
+        }
+        return posts.stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
@@ -57,8 +67,27 @@ public class CommunityService {
     }
 
     @Transactional
-    public void deletePost(UUID postId) {
-        postRepository.deleteById(postId);
+    public void updatePost(UUID userId, UUID postId, PostDto.CreateRequest request) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new IllegalArgumentException("Post not found"));
+        
+        if (!post.getAuthor().getId().equals(userId)) {
+            throw new IllegalStateException("수정 권한이 없습니다.");
+        }
+
+        post.update(request.getTitle(), request.getContent(), request.getCategory(), request.isAnonymous());
+    }
+
+    @Transactional
+    public void deletePost(UUID userId, UUID postId) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new IllegalArgumentException("Post not found"));
+        
+        if (!post.getAuthor().getId().equals(userId)) {
+            throw new IllegalStateException("삭제 권한이 없습니다.");
+        }
+        
+        postRepository.delete(post);
     }
 
     @Transactional
@@ -74,6 +103,10 @@ public class CommunityService {
                 .orElseThrow(() -> new IllegalArgumentException("Post not found"));
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        if (user.isRestricted()) {
+            throw new IllegalStateException("활동이 제한된 사용자입니다. 제한 만료일: " + user.getRestrictedUntil());
+        }
 
         Comment comment = Comment.builder()
                 .post(post)

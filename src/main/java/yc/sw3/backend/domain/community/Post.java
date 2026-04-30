@@ -53,4 +53,11 @@ public class Post {
     public void updatePin(boolean isPinned) {
         this.isPinned = isPinned;
     }
+
+    public void update(String title, String content, PostCategory category, boolean isAnonymous) {
+        this.title = title;
+        this.content = content;
+        this.category = category;
+        this.isAnonymous = isAnonymous;
+    }
 }
