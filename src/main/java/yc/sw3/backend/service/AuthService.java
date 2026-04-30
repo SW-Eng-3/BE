@@ -44,6 +44,7 @@ public class AuthService {
         emailService.sendVerificationCode(email, code);
     }
 
+    @Transactional
     public boolean verifyCode(String email, String code) {
         VerificationInfo info = verificationCodes.get(email);
         if (info == null || info.isExpired()) {
@@ -53,6 +54,7 @@ public class AuthService {
         boolean isValid = info.code.equals(code);
         if (isValid) {
             verificationCodes.remove(email);
+            userRepository.findByEmail(email).ifPresent(User::verify);
         }
         return isValid;
     }
@@ -75,6 +77,7 @@ public class AuthService {
 
         Profile profile = Profile.builder()
                 .user(savedUser)
+                .points(0)
                 .build();
 
         profileRepository.save(profile);
@@ -88,7 +91,7 @@ public class AuthService {
             throw new IllegalArgumentException("Invalid password");
         }
 
-        String token = jwtTokenProvider.createToken(user.getId(), user.getEmail());
+        String token = jwtTokenProvider.createToken(user.getId(), user.getEmail(), user.getRole());
 
         return AuthDto.TokenResponse.builder()
                 .accessToken(token)
@@ -108,11 +111,29 @@ public class AuthService {
                 .name(user.getName())
                 .role(user.getRole())
                 .major(profile.getMajor())
+                .majorDescription(profile.getMajor() != null ? profile.getMajor().getDescription() : null)
                 .currentCompany(profile.getCurrentCompany())
                 .jobCategory(profile.getJobCategory())
+                .jobCategoryDescription(profile.getJobCategory() != null ? profile.getJobCategory().getDescription() : null)
                 .country(profile.getCountry())
+                .countryDescription(profile.getCountry() != null ? profile.getCountry().getDescription() : null)
                 .bio(profile.getBio())
+                .points(profile.getPoints())
                 .build();
+    }
+
+    @Transactional
+    public void updateProfile(UUID userId, AuthDto.ProfileUpdateRequest request) {
+        Profile profile = profileRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Profile not found"));
+
+        profile.update(
+                request.getMajor(),
+                request.getCurrentCompany(),
+                request.getJobCategory(),
+                request.getCountry(),
+                request.getBio()
+        );
     }
 
     @Transactional
