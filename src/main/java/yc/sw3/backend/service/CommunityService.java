@@ -7,6 +7,7 @@ import yc.sw3.backend.domain.community.*;
 import yc.sw3.backend.domain.user.User;
 import yc.sw3.backend.domain.user.UserRepository;
 import yc.sw3.backend.dto.PostDto;
+import yc.sw3.backend.domain.gamification.PointReason;
 
 import java.util.List;
 import java.util.UUID;
@@ -20,6 +21,7 @@ public class CommunityService {
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
     private final UserRepository userRepository;
+    private final GamificationService gamificationService;
 
     @Transactional
     public UUID createPost(UUID authorId, PostDto.CreateRequest request) {
@@ -35,7 +37,11 @@ public class CommunityService {
                 .isPinned(false)
                 .build();
 
-        return postRepository.save(post).getId();
+        UUID postId = postRepository.save(post).getId();
+
+        gamificationService.awardPoints(authorId, 10, PointReason.POST_CREATED);
+
+        return postId;
     }
 
     public List<PostDto.Response> getPosts() {
@@ -77,6 +83,8 @@ public class CommunityService {
                 .build();
 
         commentRepository.save(comment);
+
+        gamificationService.awardPoints(userId, 3, PointReason.COMMENT_CREATED);
     }
 
     @Transactional
