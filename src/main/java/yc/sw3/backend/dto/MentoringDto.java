@@ -16,7 +16,9 @@ public class MentoringDto {
     @Getter @Builder @AllArgsConstructor
     public static class Response {
         private UUID id;
+        private UUID mentorId;
         private String mentorName;
+        private UUID menteeId;
         private String menteeName;
         private String message;
         private MentoringStatus status;
@@ -25,6 +27,13 @@ public class MentoringDto {
 
     @Getter @NoArgsConstructor @AllArgsConstructor
     public static class ScheduleRequest {
+        private LocalDateTime startTime;
+        private LocalDateTime endTime;
+    }
+
+    @Getter @Builder @AllArgsConstructor
+    public static class ScheduleResponse {
+        private UUID id;
         private LocalDateTime startTime;
         private LocalDateTime endTime;
     }

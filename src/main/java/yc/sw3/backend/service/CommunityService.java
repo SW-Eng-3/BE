@@ -22,6 +22,7 @@ public class CommunityService {
     private final CommentRepository commentRepository;
     private final UserRepository userRepository;
     private final GamificationService gamificationService;
+    private final EmailService emailService;
 
     @Transactional
     public UUID createPost(UUID authorId, PostDto.CreateRequest request) {
@@ -117,6 +118,16 @@ public class CommunityService {
 
         commentRepository.save(comment);
 
+        // 게시글 작성자에게 알림 메일 발송
+        if (!post.getAuthor().getId().equals(userId)) {
+            emailService.sendNotification(
+                post.getAuthor().getEmail(),
+                "내 게시글에 새로운 댓글이 달렸습니다.",
+                "커뮤니티 알림",
+                "'" + post.getTitle() + "' 게시글에 새로운 댓글이 작성되었습니다.\n내용: " + content
+            );
+        }
+
         gamificationService.awardPoints(userId, 3, PointReason.COMMENT_CREATED);
     }
 
@@ -132,6 +143,7 @@ public class CommunityService {
                 .id(post.getId())
                 .title(post.getTitle())
                 .content(post.getContent())
+                .authorId(post.isAnonymous() ? null : post.getAuthor().getId())
                 .authorName(post.isAnonymous() ? "익명" : post.getAuthor().getName())
                 .category(post.getCategory())
                 .isAnonymous(post.isAnonymous())
@@ -141,6 +153,7 @@ public class CommunityService {
                         .map(c -> PostDto.CommentResponse.builder()
                                 .id(c.getId())
                                 .content(c.getContent())
+                                .authorId(c.getUser().getId())
                                 .authorName(c.getUser().getName())
                                 .isRecommended(c.isRecommended())
                                 .createdAt(c.getCreatedAt())

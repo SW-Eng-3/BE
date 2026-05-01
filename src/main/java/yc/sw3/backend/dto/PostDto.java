@@ -16,11 +16,17 @@ public class PostDto {
         private boolean isAnonymous;
     }
 
+    @Getter @NoArgsConstructor @AllArgsConstructor
+    public static class CommentCreateRequest {
+        private String content;
+    }
+
     @Getter @Builder @AllArgsConstructor
     public static class Response {
         private UUID id;
         private String title;
         private String content;
+        private UUID authorId;
         private String authorName;
         private PostCategory category;
         private boolean isAnonymous;
@@ -33,6 +39,7 @@ public class PostDto {
     public static class CommentResponse {
         private UUID id;
         private String content;
+        private UUID authorId;
         private String authorName;
         private boolean isRecommended;
         private LocalDateTime createdAt;

@@ -24,38 +24,54 @@ public class MentoringController {
     @Operation(summary = "오피스 아워 설정", description = "상담 가능 시간대를 등록합니다.")
     @PostMapping("/schedule")
     @org.springframework.security.access.prepost.PreAuthorize("hasRole('MENTOR') or hasRole('GRADUATE') or hasRole('PROFESSOR') or hasRole('ADMIN')")
-    public ResponseEntity<Void> registerSchedule(@AuthenticationPrincipal String userId, @RequestBody MentoringDto.ScheduleRequest request) {
-        mentoringService.registerSchedule(UUID.fromString(userId), request);
+    public ResponseEntity<Void> registerSchedule(@AuthenticationPrincipal UUID userId, @RequestBody MentoringDto.ScheduleRequest request) {
+        mentoringService.registerSchedule(userId, request);
         return ResponseEntity.ok().build();
     }
 
     @Operation(summary = "면담 신청", description = "멘토에게 멘토링/커피챗을 신청합니다.")
     @PostMapping("/apply")
-    public ResponseEntity<Void> applyMentoring(@AuthenticationPrincipal String userId, @RequestBody MentoringDto.ApplyRequest request) {
-        mentoringService.applyMentoring(UUID.fromString(userId), request);
+    public ResponseEntity<Void> applyMentoring(@AuthenticationPrincipal UUID userId, @RequestBody MentoringDto.ApplyRequest request) {
+        mentoringService.applyMentoring(userId, request);
         return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "멘토 목록 조회", description = "멘토링 신청이 가능한 멘토(졸업생, 교수) 목록을 조회합니다. 필터링이 가능합니다.")
+    @GetMapping("/mentors")
+    public ResponseEntity<List<yc.sw3.backend.dto.AuthDto.ProfileResponse>> getMentors(
+            @RequestParam(required = false) yc.sw3.backend.domain.user.Major major,
+            @RequestParam(required = false) yc.sw3.backend.domain.user.JobCategory jobCategory,
+            @RequestParam(required = false) yc.sw3.backend.domain.user.Country country,
+            @RequestParam(required = false) String name) {
+        return ResponseEntity.ok(mentoringService.getMentorList(major, jobCategory, country, name));
     }
 
     @Operation(summary = "내 신청 현황 조회")
     @GetMapping("/my-requests")
-    public ResponseEntity<List<MentoringDto.Response>> getMyRequests(@AuthenticationPrincipal String userId) {
-        return ResponseEntity.ok(mentoringService.getMyRequests(UUID.fromString(userId)));
+    public ResponseEntity<List<MentoringDto.Response>> getMyRequests(@AuthenticationPrincipal UUID userId) {
+        return ResponseEntity.ok(mentoringService.getMyRequests(userId));
     }
 
     @Operation(summary = "면담 신청 취소", description = "멘티가 신청한 멘토링을 취소합니다.")
     @DeleteMapping("/{requestId}/cancel")
-    public ResponseEntity<Void> cancelMentoring(@AuthenticationPrincipal String userId, @PathVariable UUID requestId) {
-        mentoringService.cancelMentoring(UUID.fromString(userId), requestId);
+    public ResponseEntity<Void> cancelMentoring(@AuthenticationPrincipal UUID userId, @PathVariable UUID requestId) {
+        mentoringService.cancelMentoring(userId, requestId);
         return ResponseEntity.ok().build();
     }
 
     @Operation(summary = "면담 상태 변경", description = "멘토가 신청을 수락/거절하거나 완료 처리합니다.")
     @PatchMapping("/{requestId}/status")
     public ResponseEntity<Void> updateStatus(
-            @AuthenticationPrincipal String userId,
+            @AuthenticationPrincipal UUID userId,
             @PathVariable UUID requestId,
             @RequestParam MentoringStatus status) {
-        mentoringService.updateStatus(UUID.fromString(userId), requestId, status);
+        mentoringService.updateStatus(userId, requestId, status);
         return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "멘토 일정 조회", description = "특정 멘토의 상담 가능 시간대를 조회합니다.")
+    @GetMapping("/mentors/{mentorId}/schedules")
+    public ResponseEntity<List<MentoringDto.ScheduleResponse>> getMentorSchedules(@PathVariable UUID mentorId) {
+        return ResponseEntity.ok(mentoringService.getMentorSchedules(mentorId));
     }
 }

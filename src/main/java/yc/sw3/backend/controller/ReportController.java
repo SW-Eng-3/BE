@@ -24,9 +24,9 @@ public class ReportController {
     @Operation(summary = "신고 접수", description = "게시글, 댓글 또는 사용자를 신고합니다.")
     @PostMapping
     public ResponseEntity<UUID> createReport(
-            @AuthenticationPrincipal String userId,
+            @AuthenticationPrincipal UUID userId,
             @RequestBody ReportDto.CreateRequest request) {
-        return ResponseEntity.ok(reportService.createReport(UUID.fromString(userId), request));
+        return ResponseEntity.ok(reportService.createReport(userId, request));
     }
 
     @Operation(summary = "신고 내역 조회 (관리자)", description = "모든 신고 내역을 최신순으로 조회합니다.")

@@ -22,8 +22,8 @@ public class CommunityController {
 
     @Operation(summary = "게시글 작성", description = "카테고리 및 익명 여부를 포함하여 게시글을 작성합니다.")
     @PostMapping
-    public ResponseEntity<UUID> createPost(@AuthenticationPrincipal String userId, @RequestBody PostDto.CreateRequest request) {
-        return ResponseEntity.ok(communityService.createPost(UUID.fromString(userId), request));
+    public ResponseEntity<UUID> createPost(@AuthenticationPrincipal UUID userId, @RequestBody PostDto.CreateRequest request) {
+        return ResponseEntity.ok(communityService.createPost(userId, request));
     }
 
     @Operation(summary = "게시글 목록 조회", description = "카테고리별 필터링이 가능합니다.")
@@ -41,17 +41,17 @@ public class CommunityController {
     @Operation(summary = "게시글 수정", description = "자신이 작성한 게시글을 수정합니다.")
     @PutMapping("/{postId}")
     public ResponseEntity<Void> updatePost(
-            @AuthenticationPrincipal String userId,
+            @AuthenticationPrincipal UUID userId,
             @PathVariable UUID postId,
             @RequestBody PostDto.CreateRequest request) {
-        communityService.updatePost(UUID.fromString(userId), postId, request);
+        communityService.updatePost(userId, postId, request);
         return ResponseEntity.ok().build();
     }
 
     @Operation(summary = "게시글 삭제")
     @DeleteMapping("/{postId}")
-    public ResponseEntity<Void> deletePost(@AuthenticationPrincipal String userId, @PathVariable UUID postId) {
-        communityService.deletePost(UUID.fromString(userId), postId);
+    public ResponseEntity<Void> deletePost(@AuthenticationPrincipal UUID userId, @PathVariable UUID postId) {
+        communityService.deletePost(userId, postId);
         return ResponseEntity.ok().build();
     }
 
@@ -65,8 +65,8 @@ public class CommunityController {
 
     @Operation(summary = "답변(댓글) 작성")
     @PostMapping("/{postId}/comments")
-    public ResponseEntity<Void> addComment(@PathVariable UUID postId, @AuthenticationPrincipal String userId, @RequestBody String content) {
-        communityService.addComment(postId, UUID.fromString(userId), content);
+    public ResponseEntity<Void> addComment(@PathVariable UUID postId, @AuthenticationPrincipal UUID userId, @RequestBody PostDto.CommentCreateRequest request) {
+        communityService.addComment(postId, userId, request.getContent());
         return ResponseEntity.ok().build();
     }
 
