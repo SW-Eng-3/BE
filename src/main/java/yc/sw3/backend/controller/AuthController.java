@@ -37,9 +37,9 @@ public class AuthController {
         return ResponseEntity.ok(authService.getProfile(userId));
     }
 
-    @Operation(summary = "프로필 수정", description = "자신의 프로필 정보를 수정합니다.")
-    @PutMapping("/users/{userId}/profile")
-    public ResponseEntity<Void> updateProfile(@PathVariable UUID userId, @RequestBody AuthDto.ProfileUpdateRequest request) {
+    @Operation(summary = "내 프로필 수정", description = "로그인한 사용자의 프로필 정보를 수정합니다.")
+    @PutMapping("/users/me/profile")
+    public ResponseEntity<Void> updateProfile(@org.springframework.security.core.annotation.AuthenticationPrincipal UUID userId, @RequestBody AuthDto.ProfileUpdateRequest request) {
         authService.updateProfile(userId, request);
         return ResponseEntity.ok().build();
     }

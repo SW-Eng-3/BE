@@ -28,4 +28,11 @@ public class MentoringDto {
         private LocalDateTime startTime;
         private LocalDateTime endTime;
     }
+
+    @Getter @Builder @AllArgsConstructor
+    public static class ScheduleResponse {
+        private UUID id;
+        private LocalDateTime startTime;
+        private LocalDateTime endTime;
+    }
 }

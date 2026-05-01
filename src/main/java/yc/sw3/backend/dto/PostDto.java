@@ -16,6 +16,11 @@ public class PostDto {
         private boolean isAnonymous;
     }
 
+    @Getter @NoArgsConstructor @AllArgsConstructor
+    public static class CommentCreateRequest {
+        private String content;
+    }
+
     @Getter @Builder @AllArgsConstructor
     public static class Response {
         private UUID id;

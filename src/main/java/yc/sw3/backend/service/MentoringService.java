@@ -101,4 +101,16 @@ public class MentoringService {
 
         scheduleRepository.save(schedule);
     }
+
+    public List<MentoringDto.ScheduleResponse> getMentorSchedules(UUID mentorId) {
+        User mentor = userRepository.findById(mentorId)
+                .orElseThrow(() -> new IllegalArgumentException("Mentor not found"));
+        return scheduleRepository.findAllByMentor(mentor).stream()
+                .map(s -> MentoringDto.ScheduleResponse.builder()
+                        .id(s.getId())
+                        .startTime(s.getStartTime())
+                        .endTime(s.getEndTime())
+                        .build())
+                .collect(Collectors.toList());
+    }
 }

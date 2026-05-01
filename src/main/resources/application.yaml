@@ -42,6 +42,22 @@ spring:
             fallback: false
             port: 465
 
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+  health:
+    redis:
+      enabled: false
+
 springdoc:
   swagger-ui:
     path: /SWENG3-docs
