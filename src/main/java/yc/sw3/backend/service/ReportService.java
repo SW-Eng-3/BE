@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import yc.sw3.backend.domain.community.PostRepository;
+import yc.sw3.backend.domain.community.CommentRepository;
 import yc.sw3.backend.domain.report.Report;
 import yc.sw3.backend.domain.report.ReportRepository;
 import yc.sw3.backend.domain.report.ReportStatus;
@@ -26,6 +27,7 @@ public class ReportService {
     private final UserRepository userRepository;
     private final GamificationService gamificationService;
     private final PostRepository postRepository;
+    private final CommentRepository commentRepository;
 
     @Transactional
     public UUID createReport(UUID reporterId, ReportDto.CreateRequest request) {
@@ -74,6 +76,10 @@ public class ReportService {
         } else if (report.getTargetType() == ReportTargetType.POST) {
             targetUserId = postRepository.findById(report.getTargetId())
                     .map(post -> post.getAuthor().getId())
+                    .orElse(null);
+        } else if (report.getTargetType() == ReportTargetType.COMMENT) {
+            targetUserId = commentRepository.findById(report.getTargetId())
+                    .map(comment -> comment.getUser().getId())
                     .orElse(null);
         }
 

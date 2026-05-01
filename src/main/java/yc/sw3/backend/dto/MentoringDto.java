@@ -16,7 +16,9 @@ public class MentoringDto {
     @Getter @Builder @AllArgsConstructor
     public static class Response {
         private UUID id;
+        private UUID mentorId;
         private String mentorName;
+        private UUID menteeId;
         private String menteeName;
         private String message;
         private MentoringStatus status;

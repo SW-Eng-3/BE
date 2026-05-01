@@ -26,6 +26,7 @@ public class PostDto {
         private UUID id;
         private String title;
         private String content;
+        private UUID authorId;
         private String authorName;
         private PostCategory category;
         private boolean isAnonymous;
@@ -38,6 +39,7 @@ public class PostDto {
     public static class CommentResponse {
         private UUID id;
         private String content;
+        private UUID authorId;
         private String authorName;
         private boolean isRecommended;
         private LocalDateTime createdAt;

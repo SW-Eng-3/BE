@@ -36,6 +36,16 @@ public class MentoringController {
         return ResponseEntity.ok().build();
     }
 
+    @Operation(summary = "멘토 목록 조회", description = "멘토링 신청이 가능한 멘토(졸업생, 교수) 목록을 조회합니다. 필터링이 가능합니다.")
+    @GetMapping("/mentors")
+    public ResponseEntity<List<yc.sw3.backend.dto.AuthDto.ProfileResponse>> getMentors(
+            @RequestParam(required = false) yc.sw3.backend.domain.user.Major major,
+            @RequestParam(required = false) yc.sw3.backend.domain.user.JobCategory jobCategory,
+            @RequestParam(required = false) yc.sw3.backend.domain.user.Country country,
+            @RequestParam(required = false) String name) {
+        return ResponseEntity.ok(mentoringService.getMentorList(major, jobCategory, country, name));
+    }
+
     @Operation(summary = "내 신청 현황 조회")
     @GetMapping("/my-requests")
     public ResponseEntity<List<MentoringDto.Response>> getMyRequests(@AuthenticationPrincipal UUID userId) {
