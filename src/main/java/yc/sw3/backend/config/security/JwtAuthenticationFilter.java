@@ -1,4 +1,4 @@
-package yc.sw3.backend.config;
+package yc.sw3.backend.config.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

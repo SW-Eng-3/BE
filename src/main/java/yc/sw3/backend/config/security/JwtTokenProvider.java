@@ -1,4 +1,4 @@
-package yc.sw3.backend.config;
+package yc.sw3.backend.config.security;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

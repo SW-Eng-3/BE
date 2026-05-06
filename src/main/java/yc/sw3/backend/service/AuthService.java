@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import yc.sw3.backend.config.JwtTokenProvider;
+import yc.sw3.backend.config.security.JwtTokenProvider;
 import yc.sw3.backend.domain.user.*;
 import yc.sw3.backend.dto.AuthDto;
 
@@ -96,6 +96,18 @@ public class AuthService {
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
             throw new IllegalArgumentException("Invalid password");
         }
+
+        String token = jwtTokenProvider.createToken(user.getId(), user.getEmail(), user.getRole());
+
+        return AuthDto.TokenResponse.builder()
+                .accessToken(token)
+                .userId(user.getId())
+                .build();
+    }
+
+    public AuthDto.TokenResponse createTestToken(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         String token = jwtTokenProvider.createToken(user.getId(), user.getEmail(), user.getRole());
 

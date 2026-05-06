@@ -10,7 +10,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import yc.sw3.backend.config.JwtTokenProvider;
+import yc.sw3.backend.config.security.JwtTokenProvider;
 import yc.sw3.backend.domain.user.ProfileRepository;
 import yc.sw3.backend.domain.user.User;
 import yc.sw3.backend.domain.user.UserRepository;

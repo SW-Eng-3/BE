@@ -1,4 +1,4 @@
-package yc.sw3.backend.config;
+package yc.sw3.backend.config.web;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
