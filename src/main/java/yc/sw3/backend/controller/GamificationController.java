@@ -31,7 +31,7 @@ public class GamificationController {
     @GetMapping("/points")
     public ResponseEntity<PointDto.SummaryResponse> getMyPoints(@AuthenticationPrincipal UUID userId) {
         Profile profile = profileRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("Profile not found"));
+                .orElseThrow(() -> new IllegalArgumentException("프로필을 찾을 수 없습니다."));
         
         return ResponseEntity.ok(PointDto.SummaryResponse.builder()
                 .totalPoints(profile.getPoints())

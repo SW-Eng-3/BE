@@ -64,9 +64,9 @@ public class MentoringService {
     @Transactional
     public void applyMentoring(UUID menteeId, MentoringDto.ApplyRequest request) {
         User mentee = userRepository.findById(menteeId)
-                .orElseThrow(() -> new IllegalArgumentException("Mentee not found"));
+                .orElseThrow(() -> new IllegalArgumentException("멘티를 찾을 수 없습니다."));
         User mentor = userRepository.findById(request.getMentorId())
-                .orElseThrow(() -> new IllegalArgumentException("Mentor not found"));
+                .orElseThrow(() -> new IllegalArgumentException("멘토를 찾을 수 없습니다."));
 
         MentoringRequest mentoringRequest = MentoringRequest.builder()
                 .mentee(mentee)
@@ -88,7 +88,7 @@ public class MentoringService {
 
     public List<MentoringDto.Response> getMyRequests(UUID menteeId) {
         User mentee = userRepository.findById(menteeId)
-                .orElseThrow(() -> new IllegalArgumentException("Mentee not found"));
+                .orElseThrow(() -> new IllegalArgumentException("멘티를 찾을 수 없습니다."));
         return mentoringRequestRepository.findAllByMentee(mentee).stream()
                 .map(m -> MentoringDto.Response.builder()
                         .id(m.getId())
@@ -106,7 +106,7 @@ public class MentoringService {
     @Transactional
     public void cancelMentoring(UUID userId, UUID requestId) {
         MentoringRequest mentoringRequest = mentoringRequestRepository.findById(requestId)
-                .orElseThrow(() -> new IllegalArgumentException("Request not found"));
+                .orElseThrow(() -> new IllegalArgumentException("요청을 찾을 수 없습니다."));
         
         if (!mentoringRequest.getMentee().getId().equals(userId)) {
             throw new IllegalStateException("본인이 신청한 멘토링만 취소할 수 있습니다.");
@@ -118,7 +118,7 @@ public class MentoringService {
     @Transactional
     public void updateStatus(UUID userId, UUID requestId, MentoringStatus status) {
         MentoringRequest mentoringRequest = mentoringRequestRepository.findById(requestId)
-                .orElseThrow(() -> new IllegalArgumentException("Request not found"));
+                .orElseThrow(() -> new IllegalArgumentException("요청을 찾을 수 없습니다."));
         
         if (!mentoringRequest.getMentor().getId().equals(userId)) {
             throw new IllegalStateException("권한이 없습니다.");
@@ -161,7 +161,7 @@ public class MentoringService {
     @Transactional
     public void registerSchedule(UUID mentorId, MentoringDto.ScheduleRequest request) {
         User mentor = userRepository.findById(mentorId)
-                .orElseThrow(() -> new IllegalArgumentException("Mentor not found"));
+                .orElseThrow(() -> new IllegalArgumentException("멘토를 찾을 수 없습니다."));
 
         MentorSchedule schedule = MentorSchedule.builder()
                 .mentor(mentor)
@@ -174,7 +174,7 @@ public class MentoringService {
 
     public List<MentoringDto.ScheduleResponse> getMentorSchedules(UUID mentorId) {
         User mentor = userRepository.findById(mentorId)
-                .orElseThrow(() -> new IllegalArgumentException("Mentor not found"));
+                .orElseThrow(() -> new IllegalArgumentException("멘토를 찾을 수 없습니다."));
         return scheduleRepository.findAllByMentor(mentor).stream()
                 .map(s -> MentoringDto.ScheduleResponse.builder()
                         .id(s.getId())

@@ -56,6 +56,27 @@
         
         .loading-spinner { display: inline-block; width: 20px; height: 20px; border: 3px solid rgba(0,0,0,.1); border-radius: 50%; border-top-color: var(--primary-color); animation: spin 1s ease-in-out infinite; vertical-align: middle; margin-right: 10px; }
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Chat */
+        .chat-layout { display: grid; grid-template-columns: 280px 1fr; gap: 20px; min-height: 560px; }
+        .chat-room-list { background: #f9f9f9; border: 1px solid #ddd; border-radius: 8px; padding: 12px; overflow-y: auto; }
+        .chat-room-item { background: #fff; border: 1px solid #e9ecef; border-radius: 8px; padding: 12px; margin-bottom: 10px; cursor: pointer; }
+        .chat-room-item.active { border-color: var(--primary-color); box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.15); }
+        .chat-panel { border: 1px solid #ddd; border-radius: 8px; background: #fff; display: flex; flex-direction: column; min-height: 560px; }
+        .chat-header { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; border-bottom: 1px solid #eee; }
+        .chat-messages { flex: 1; padding: 16px; overflow-y: auto; background: #f8f9fa; }
+        .chat-empty { color: #888; text-align: center; padding: 40px 10px; }
+        .chat-message { max-width: 72%; padding: 10px 12px; margin-bottom: 10px; border-radius: 12px; background: #fff; border: 1px solid #e9ecef; }
+        .chat-message.mine { margin-left: auto; background: #d9ecff; border-color: #b8dcff; }
+        .chat-message-name { font-size: 12px; font-weight: bold; margin-bottom: 4px; color: #555; }
+        .chat-message-time { font-size: 11px; color: #777; margin-top: 5px; text-align: right; }
+        .chat-input-row { display: flex; gap: 8px; padding: 12px; border-top: 1px solid #eee; }
+        .chat-input-row input { flex: 1; }
+        @media (max-width: 760px) {
+            .chat-layout { grid-template-columns: 1fr; }
+            .chat-panel { min-height: 520px; }
+            .chat-message { max-width: 86%; }
+        }
     </style>
 </head>
 <body>
@@ -77,6 +98,7 @@
             <div class="tab active" data-tab="auth">🔐 인증/가입</div>
             <div class="tab" data-tab="community">💬 커뮤니티</div>
             <div class="tab" data-tab="mentoring">👥 멘토링</div>
+            <div class="tab" data-tab="chat">🗨️ 채팅</div>
             <div class="tab" data-tab="gamification">💎 포인트</div>
             <div class="tab" data-tab="report">🚨 신고</div>
             <div class="tab" data-tab="system">⚙️ 시스템</div>
@@ -179,6 +201,39 @@
             </div>
         </div>
 
+        <!-- Chat Tab -->
+        <div id="chat" class="tab-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                <h2>선배와 1:1 채팅</h2>
+                <button onclick="getChatRooms()" class="btn-purple" style="padding: 5px 15px;">새로고침</button>
+            </div>
+            <div class="chat-layout">
+                <div>
+                    <h3 style="font-size: 16px;">채팅방</h3>
+                    <div id="chatRoomList" class="chat-room-list">
+                        <div class="chat-empty">멘토 목록에서 1:1 채팅을 시작하세요.</div>
+                    </div>
+                </div>
+                <div class="chat-panel">
+                    <div class="chat-header">
+                        <div>
+                            <strong id="chatTitle">채팅방을 선택하세요</strong>
+                            <div id="chatSocketStatus" style="font-size: 12px; color: #777; margin-top: 4px;">연결 대기</div>
+                        </div>
+                        <button onclick="document.querySelector('[data-tab=&quot;mentoring&quot;]').click()" style="padding: 6px 12px; background: #6c757d;">이전 화면</button>
+                    </div>
+                    <div id="chatMessages" class="chat-messages">
+                        <div class="chat-empty">채팅방을 선택하면 메시지가 표시됩니다.</div>
+                    </div>
+                    <div class="chat-input-row">
+                        <input type="text" id="chatMessageInput" maxlength="1000" placeholder="메시지를 입력하세요" onkeydown="if(event.key === 'Enter') sendChatMessage();">
+                        <button onclick="sendChatMessage()">전송</button>
+                    </div>
+                </div>
+            </div>
+            <div id="chatStatus" class="status"></div>
+        </div>
+
         <!-- Gamification Tab -->
         <div id="gamification" class="tab-content">
             <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -258,12 +313,16 @@
     <script>
         // --- Global State ---
         let accessToken = localStorage.getItem('accessToken');
+        let currentUserId = localStorage.getItem('userId');
+        let chatSocket = null;
+        let currentChatRoom = null;
         
         // --- Initialization ---
         window.addEventListener('load', () => {
             updateTokenDisplay();
             checkConnection();
         });
+        window.addEventListener('beforeunload', disconnectChatSocket);
 
         async function checkConnection() {
             try {
@@ -290,10 +349,15 @@
             document.getElementById(tabId).classList.add('active');
             tab.classList.add('active');
 
+            if (tabId !== 'chat') {
+                disconnectChatSocket();
+            }
+
             // Auto-load data if authenticated
             if (accessToken) {
                 if (tabId === 'community') getPosts();
                 if (tabId === 'mentoring') { getMentors(); getMyMentoring(); }
+                if (tabId === 'chat') getChatRooms();
                 if (tabId === 'gamification') getPoints();
             }
         });
@@ -312,6 +376,8 @@
             const logoutBtn = document.getElementById('logoutBtn');
             
             if (accessToken) {
+                currentUserId = currentUserId || getUserIdFromToken(accessToken);
+                if (currentUserId) localStorage.setItem('userId', currentUserId);
                 statusText.innerText = "✅ 인증 완료";
                 statusText.style.color = "var(--success-color)";
                 display.innerText = "Token: " + accessToken.substring(0, 30) + "...";
@@ -325,10 +391,32 @@
         }
 
         function clearToken() {
+            disconnectChatSocket();
             accessToken = null;
+            currentUserId = null;
+            currentChatRoom = null;
             localStorage.removeItem('accessToken');
+            localStorage.removeItem('userId');
             updateTokenDisplay();
             alert("로그아웃 되었습니다.");
+        }
+
+        function getUserIdFromToken(token) {
+            try {
+                const payload = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+                return JSON.parse(atob(payload)).sub;
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function escapeHtml(value) {
+            return String(value ?? '')
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#039;');
         }
 
         // --- API wrapper ---
@@ -390,7 +478,9 @@
             if (response.ok) {
                 const data = await response.json();
                 accessToken = data.accessToken;
+                currentUserId = data.userId;
                 localStorage.setItem('accessToken', accessToken);
+                localStorage.setItem('userId', currentUserId);
                 updateTokenDisplay();
                 showStatus('authStatus', "✅ 인증 성공! 다른 탭의 기능을 사용해보세요.");
             } else {
@@ -481,14 +571,20 @@
             const response = await apiFetch('/api/v1/mentoring/mentors');
             if (response && response.ok) {
                 const mentors = await response.json();
-                listArea.innerHTML = mentors.map(m => `
+                listArea.innerHTML = mentors.map(m => {
+                    const mentorId = m.userId || m.id;
+                    return `
                     <div class="item-card">
-                        <span class="item-id">ID: ${m.id.substring(0,8)}</span>
-                        <h4>${m.name} (${m.role})</h4>
-                        <div class="item-meta">${m.major || '전공미지정'} | ${m.country || '국가미지정'}</div>
-                        <button onclick="applyMentoring('${m.id}')" style="padding: 5px 15px;">멘토링 신청</button>
+                        <span class="item-id">ID: ${mentorId ? mentorId.substring(0,8) : '-'}</span>
+                        <h4>${escapeHtml(m.name)} (${escapeHtml(m.role)})</h4>
+                        <div class="item-meta">${escapeHtml(m.major || '전공미지정')} | ${escapeHtml(m.country || '국가미지정')}</div>
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                            <button onclick="applyMentoring('${mentorId}')" style="padding: 5px 15px;">멘토링 신청</button>
+                            <button onclick="openSeniorChat('${mentorId}')" class="btn-success" style="padding: 5px 15px;">1:1 채팅</button>
+                        </div>
                     </div>
-                `).join('') || "멘토 목록이 비어있습니다.";
+                `;
+                }).join('') || "멘토 목록이 비어있습니다.";
             }
         }
 
@@ -524,7 +620,167 @@
             }
         }
 
-        // --- 4. Gamification ---
+        // --- 4. Chat ---
+        async function getChatRooms() {
+            const listArea = document.getElementById('chatRoomList');
+            listArea.innerHTML = "<div class='loading-spinner'></div> 로딩 중...";
+
+            const response = await apiFetch('/api/v1/chats/rooms');
+            if (response && response.ok) {
+                const rooms = await response.json();
+                listArea.innerHTML = rooms.map(room => {
+                    const otherName = room.studentId === currentUserId ? room.seniorName : room.studentName;
+                    const activeClass = currentChatRoom && currentChatRoom.roomId === room.roomId ? ' active' : '';
+                    return `
+                        <div class="chat-room-item${activeClass}" onclick="openChatRoom('${room.roomId}')">
+                            <div style="font-weight: bold;">${escapeHtml(otherName)}</div>
+                            <div style="font-size: 12px; color: #777; margin-top: 4px;">${escapeHtml(room.lastMessage || '아직 메시지가 없습니다.')}</div>
+                            <div style="font-size: 11px; color: #999; margin-top: 6px;">${room.lastMessageAt ? new Date(room.lastMessageAt).toLocaleString() : ''}</div>
+                        </div>
+                    `;
+                }).join('') || "<div class='chat-empty'>채팅방이 없습니다. 멘토 목록에서 1:1 채팅을 시작하세요.</div>";
+            } else if (response) {
+                listArea.innerHTML = "<div class='chat-empty'>채팅방 조회에 실패했습니다.</div>";
+            }
+        }
+
+        async function openSeniorChat(seniorId) {
+            if (!seniorId || seniorId === 'undefined') {
+                showStatus('chatStatus', "선배 정보를 확인할 수 없습니다.", true);
+                return;
+            }
+
+            const response = await apiFetch('/api/v1/chats/rooms/senior', {
+                method: 'POST',
+                body: JSON.stringify({ seniorId })
+            });
+
+            if (response && response.ok) {
+                const room = await response.json();
+                document.querySelector('[data-tab="chat"]').click();
+                renderChatRoom(room);
+                connectChatSocket(room.roomId);
+                getChatRooms();
+            } else if (response) {
+                showStatus('chatStatus', "채팅방 생성에 실패했습니다.", true);
+            }
+        }
+
+        async function openChatRoom(roomId) {
+            const response = await apiFetch(`/api/v1/chats/rooms/${roomId}`);
+            if (response && response.ok) {
+                const room = await response.json();
+                renderChatRoom(room);
+                connectChatSocket(room.roomId);
+                getChatRooms();
+            } else if (response) {
+                showStatus('chatStatus', "채팅방 조회에 실패했습니다.", true);
+            }
+        }
+
+        function renderChatRoom(room) {
+            currentChatRoom = room;
+            const otherName = room.studentId === currentUserId ? room.seniorName : room.studentName;
+            document.getElementById('chatTitle').innerText = `${otherName}님과의 1:1 채팅`;
+            renderChatMessages(room.messages || []);
+        }
+
+        function renderChatMessages(messages) {
+            const area = document.getElementById('chatMessages');
+            if (!messages.length) {
+                area.innerHTML = "<div class='chat-empty'>아직 메시지가 없습니다. 첫 메시지를 보내보세요.</div>";
+                return;
+            }
+            area.innerHTML = '';
+            messages.forEach(appendChatMessage);
+            area.scrollTop = area.scrollHeight;
+        }
+
+        function appendChatMessage(message) {
+            const area = document.getElementById('chatMessages');
+            const empty = area.querySelector('.chat-empty');
+            if (empty) area.innerHTML = '';
+
+            const mine = message.senderId === currentUserId;
+            const div = document.createElement('div');
+            div.className = 'chat-message' + (mine ? ' mine' : '');
+            div.innerHTML = `
+                <div class="chat-message-name">${escapeHtml(message.senderName)}</div>
+                <div style="white-space: pre-wrap;">${escapeHtml(message.content)}</div>
+                <div class="chat-message-time">${message.createdAt ? new Date(message.createdAt).toLocaleTimeString() : ''}</div>
+            `;
+            area.appendChild(div);
+            area.scrollTop = area.scrollHeight;
+        }
+
+        function connectChatSocket(roomId) {
+            disconnectChatSocket();
+            if (!accessToken || !roomId) {
+                document.getElementById('chatSocketStatus').innerText = '인증 정보가 없어 연결할 수 없습니다.';
+                return;
+            }
+
+            const protocol = location.protocol === 'https:' ? 'wss' : 'ws';
+            const socketUrl = `${protocol}://${location.host}/ws/chat?roomId=${encodeURIComponent(roomId)}&token=${encodeURIComponent(accessToken)}`;
+            chatSocket = new WebSocket(socketUrl);
+
+            chatSocket.onopen = () => {
+                document.getElementById('chatSocketStatus').innerText = '실시간 연결됨';
+                document.getElementById('chatSocketStatus').style.color = 'var(--success-color)';
+            };
+            chatSocket.onmessage = (event) => {
+                const message = JSON.parse(event.data);
+                if (message.type === 'ERROR') {
+                    showStatus('chatStatus', message.message || "메시지 전송에 실패했습니다.", true);
+                    return;
+                }
+                if (currentChatRoom && message.roomId === currentChatRoom.roomId) {
+                    appendChatMessage(message);
+                }
+                getChatRooms();
+            };
+            chatSocket.onerror = () => {
+                document.getElementById('chatSocketStatus').innerText = 'WebSocket 연결 오류';
+                document.getElementById('chatSocketStatus').style.color = 'var(--error-color)';
+            };
+            chatSocket.onclose = () => {
+                document.getElementById('chatSocketStatus').innerText = '연결 종료';
+                document.getElementById('chatSocketStatus').style.color = '#777';
+            };
+        }
+
+        function disconnectChatSocket() {
+            if (chatSocket) {
+                chatSocket.close();
+                chatSocket = null;
+            }
+        }
+
+        function sendChatMessage() {
+            const input = document.getElementById('chatMessageInput');
+            const content = input.value.trim();
+            if (!currentChatRoom) {
+                showStatus('chatStatus', "채팅방을 먼저 선택하세요.", true);
+                return;
+            }
+            if (!content) {
+                showStatus('chatStatus', "빈 메시지는 전송할 수 없습니다.", true);
+                return;
+            }
+            if (content.length > 1000) {
+                showStatus('chatStatus', "메시지는 1000자 이하로 입력하세요.", true);
+                return;
+            }
+            if (!chatSocket || chatSocket.readyState !== WebSocket.OPEN) {
+                showStatus('chatStatus', "WebSocket이 연결되지 않았습니다.", true);
+                return;
+            }
+
+            chatSocket.send(JSON.stringify({ roomId: currentChatRoom.roomId, content }));
+            input.value = '';
+        }
+
+        // --- 5. Gamification ---
         async function getPoints() {
             const response = await apiFetch('/api/v1/gamification/points');
             if (response && response.ok) {

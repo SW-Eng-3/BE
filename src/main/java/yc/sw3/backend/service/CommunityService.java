@@ -27,7 +27,7 @@ public class CommunityService {
     @Transactional
     public UUID createPost(UUID authorId, PostDto.CreateRequest request) {
         User author = userRepository.findById(authorId)
-                .orElseThrow(() -> new IllegalArgumentException("Author not found"));
+                .orElseThrow(() -> new IllegalArgumentException("작성자를 찾을 수 없습니다."));
 
         if (author.isRestricted()) {
             throw new IllegalStateException("활동이 제한된 사용자입니다. 제한 만료일: " + author.getRestrictedUntil());
@@ -63,14 +63,14 @@ public class CommunityService {
 
     public PostDto.Response getPost(UUID postId) {
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new IllegalArgumentException("Post not found"));
+                .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
         return convertToDto(post);
     }
 
     @Transactional
     public void updatePost(UUID userId, UUID postId, PostDto.CreateRequest request) {
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new IllegalArgumentException("Post not found"));
+                .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
         
         if (!post.getAuthor().getId().equals(userId)) {
             throw new IllegalStateException("수정 권한이 없습니다.");
@@ -82,7 +82,7 @@ public class CommunityService {
     @Transactional
     public void deletePost(UUID userId, UUID postId) {
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new IllegalArgumentException("Post not found"));
+                .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
         
         if (!post.getAuthor().getId().equals(userId)) {
             throw new IllegalStateException("삭제 권한이 없습니다.");
@@ -94,16 +94,16 @@ public class CommunityService {
     @Transactional
     public void pinPost(UUID postId, boolean isPinned) {
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new IllegalArgumentException("Post not found"));
+                .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
         post.updatePin(isPinned);
     }
 
     @Transactional
     public void addComment(UUID postId, UUID userId, String content) {
         Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new IllegalArgumentException("Post not found"));
+                .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다."));
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
         if (user.isRestricted()) {
             throw new IllegalStateException("활동이 제한된 사용자입니다. 제한 만료일: " + user.getRestrictedUntil());
@@ -134,7 +134,7 @@ public class CommunityService {
     @Transactional
     public void recommendComment(UUID commentId, boolean isRecommended) {
         Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new IllegalArgumentException("Comment not found"));
+                .orElseThrow(() -> new IllegalArgumentException("댓글을 찾을 수 없습니다."));
         comment.updateRecommend(isRecommended);
     }
 
