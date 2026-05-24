@@ -68,7 +68,7 @@ public class AuthService {
             throw new IllegalArgumentException("허용되지 않은 이메일 주소입니다.");
         }
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new IllegalArgumentException("Email already exists");
+            throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
         }
 
         User user = User.builder()
@@ -91,10 +91,10 @@ public class AuthService {
 
     public AuthDto.TokenResponse login(AuthDto.LoginRequest request) {
         User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new IllegalArgumentException("Invalid password");
+            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
         }
 
         String token = jwtTokenProvider.createToken(user.getId(), user.getEmail(), user.getRole());
@@ -107,7 +107,7 @@ public class AuthService {
 
     public AuthDto.TokenResponse createTestToken(String email) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
         String token = jwtTokenProvider.createToken(user.getId(), user.getEmail(), user.getRole());
 
@@ -119,9 +119,9 @@ public class AuthService {
 
     public AuthDto.ProfileResponse getProfile(UUID userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
         Profile profile = profileRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("Profile not found"));
+                .orElseThrow(() -> new IllegalArgumentException("프로필을 찾을 수 없습니다."));
 
         return AuthDto.ProfileResponse.builder()
                 .userId(user.getId())
@@ -143,7 +143,7 @@ public class AuthService {
     @Transactional
     public void updateProfile(UUID userId, AuthDto.ProfileUpdateRequest request) {
         Profile profile = profileRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("Profile not found"));
+                .orElseThrow(() -> new IllegalArgumentException("프로필을 찾을 수 없습니다."));
 
         profile.update(
                 request.getMajor(),
@@ -157,7 +157,7 @@ public class AuthService {
     @Transactional
     public void verifyUser(UUID userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
         user.verify();
     }
 }

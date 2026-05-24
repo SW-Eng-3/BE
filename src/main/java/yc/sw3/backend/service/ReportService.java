@@ -32,7 +32,7 @@ public class ReportService {
     @Transactional
     public UUID createReport(UUID reporterId, ReportDto.CreateRequest request) {
         User reporter = userRepository.findById(reporterId)
-                .orElseThrow(() -> new IllegalArgumentException("Reporter not found"));
+                .orElseThrow(() -> new IllegalArgumentException("신고자를 찾을 수 없습니다."));
 
         Report report = Report.builder()
                 .reporter(reporter)
@@ -54,7 +54,7 @@ public class ReportService {
     @Transactional
     public void processReport(UUID reportId, ReportStatus status) {
         Report report = reportRepository.findById(reportId)
-                .orElseThrow(() -> new IllegalArgumentException("Report not found"));
+                .orElseThrow(() -> new IllegalArgumentException("신고 내역을 찾을 수 없습니다."));
         
         if (report.getStatus() != ReportStatus.PENDING) {
             throw new IllegalStateException("이미 처리된 신고입니다.");

@@ -26,14 +26,14 @@ public class ChatService {
 
     @Transactional
     public ChatDto.RoomResponse getOrCreateSeniorRoom(UUID userId, UUID seniorId) {
-        User student = getUser(userId, "User not found");
-        User senior = getUser(seniorId, "Senior not found");
+        User student = getUser(userId, "사용자를 찾을 수 없습니다.");
+        User senior = getUser(seniorId, "시니어를 찾을 수 없습니다.");
 
         if (student.getId().equals(senior.getId())) {
-            throw new IllegalArgumentException("Cannot create a chat room with yourself");
+            throw new IllegalArgumentException("자기 자신과는 채팅방을 만들 수 없습니다.");
         }
         if (senior.getRole() == Role.STUDENT) {
-            throw new IllegalArgumentException("Only graduates, professors, or admins can be selected as seniors");
+            throw new IllegalArgumentException("졸업생, 교수 또는 관리자만 시니어로 선택될 수 있습니다.");
         }
 
         ChatRoom room = chatRoomRepository.findByStudentAndSenior(student, senior)
@@ -47,7 +47,7 @@ public class ChatService {
     }
 
     public List<ChatDto.RoomResponse> getMyRooms(UUID userId) {
-        User user = getUser(userId, "User not found");
+        User user = getUser(userId, "사용자를 찾을 수 없습니다.");
         return chatRoomRepository.findMyRoomsOrderByLatest(user).stream()
                 .map(room -> toRoomResponse(room, false))
                 .collect(Collectors.toList());
@@ -68,7 +68,7 @@ public class ChatService {
     @Transactional
     public ChatDto.MessageResponse saveMessage(UUID userId, UUID roomId, String content) {
         ChatRoom room = getRoomWithAccess(userId, roomId);
-        User sender = getUser(userId, "Sender not found");
+        User sender = getUser(userId, "발신자를 찾을 수 없습니다.");
         String normalizedContent = normalizeContent(content);
 
         ChatMessage message = chatMessageRepository.save(ChatMessage.builder()
@@ -85,7 +85,7 @@ public class ChatService {
 
     private User getUser(UUID userId, String message) {
         if (userId == null) {
-            throw new IllegalArgumentException("Authentication is required");
+            throw new IllegalArgumentException("인증이 필요합니다.");
         }
         return userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException(message));
@@ -93,23 +93,23 @@ public class ChatService {
 
     private ChatRoom getRoomWithAccess(UUID userId, UUID roomId) {
         if (roomId == null) {
-            throw new IllegalArgumentException("Room id is required");
+            throw new IllegalArgumentException("채팅방 ID는 필수입니다.");
         }
         ChatRoom room = chatRoomRepository.findById(roomId)
-                .orElseThrow(() -> new IllegalArgumentException("Chat room not found"));
+                .orElseThrow(() -> new IllegalArgumentException("채팅방을 찾을 수 없습니다."));
         if (!room.hasParticipant(userId)) {
-            throw new IllegalStateException("No permission to access this chat room");
+            throw new IllegalStateException("해당 채팅방에 접근할 권한이 없습니다.");
         }
         return room;
     }
 
     private String normalizeContent(String content) {
         if (content == null || content.trim().isEmpty()) {
-            throw new IllegalArgumentException("Message content is required");
+            throw new IllegalArgumentException("메시지 내용은 필수입니다.");
         }
         String normalized = content.trim();
         if (normalized.length() > MAX_MESSAGE_LENGTH) {
-            throw new IllegalArgumentException("Message content must be 1000 characters or less");
+            throw new IllegalArgumentException("메시지 내용은 1000자 이내여야 합니다.");
         }
         return normalized;
     }

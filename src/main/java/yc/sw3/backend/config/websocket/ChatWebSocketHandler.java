@@ -40,7 +40,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             String roomIdValue = query.get("roomId");
 
             if (token == null || roomIdValue == null || !jwtTokenProvider.validateToken(token)) {
-                session.close(CloseStatus.NOT_ACCEPTABLE.withReason("Invalid chat websocket credentials"));
+                session.close(CloseStatus.NOT_ACCEPTABLE.withReason("유효하지 않은 채팅 웹소켓 인증 정보입니다."));
                 return;
             }
 
@@ -53,7 +53,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
             session.getAttributes().put("roomId", roomId);
             sessionsByRoom.computeIfAbsent(roomId, id -> ConcurrentHashMap.newKeySet()).add(session);
         } catch (RuntimeException e) {
-            session.close(CloseStatus.NOT_ACCEPTABLE.withReason("Invalid chat websocket request"));
+            session.close(CloseStatus.NOT_ACCEPTABLE.withReason("유효하지 않은 채팅 웹소켓 요청입니다."));
         }
     }
 
@@ -63,7 +63,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         UUID roomId = (UUID) session.getAttributes().get("roomId");
 
         if (userId == null || roomId == null) {
-            session.close(CloseStatus.NOT_ACCEPTABLE.withReason("Chat websocket session is not authenticated"));
+            session.close(CloseStatus.NOT_ACCEPTABLE.withReason("채팅 웹소켓 세션이 인증되지 않았습니다."));
             return;
         }
 
@@ -129,7 +129,7 @@ public class ChatWebSocketHandler extends TextWebSocketHandler {
         }
         session.sendMessage(new TextMessage(objectMapper.writeValueAsString(Map.of(
                 "type", "ERROR",
-                "message", message != null ? message : "Chat message failed"
+                "message", message != null ? message : "채팅 메시지 전송에 실패했습니다."
         ))));
     }
 
