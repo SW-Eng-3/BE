@@ -1,15 +1,17 @@
 package yc.sw3.backend.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import yc.sw3.backend.domain.community.*;
+import yc.sw3.backend.domain.gamification.PointReason;
 import yc.sw3.backend.domain.user.User;
 import yc.sw3.backend.domain.user.UserRepository;
+import yc.sw3.backend.dto.PageResponse;
 import yc.sw3.backend.dto.PostDto;
-import yc.sw3.backend.domain.gamification.PointReason;
 
-import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -49,16 +51,9 @@ public class CommunityService {
         return postId;
     }
 
-    public List<PostDto.Response> getPosts(PostCategory category) {
-        List<Post> posts;
-        if (category != null) {
-            posts = postRepository.findByCategoryOrderByCreatedAtDesc(category);
-        } else {
-            posts = postRepository.findAllByOrderByCreatedAtDesc();
-        }
-        return posts.stream()
-                .map(this::convertToDto)
-                .collect(Collectors.toList());
+    public PageResponse<PostDto.Response> getPosts(PostCategory category, String keyword, Pageable pageable) {
+        Page<Post> posts = postRepository.searchPosts(category, keyword, pageable);
+        return PageResponse.of(posts.map(this::convertToDto));
     }
 
     public PostDto.Response getPost(UUID postId) {

@@ -6,12 +6,19 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import yc.sw3.backend.domain.community.Post;
+import yc.sw3.backend.domain.community.PostCategory;
 import yc.sw3.backend.domain.community.PostRepository;
 import yc.sw3.backend.domain.user.User;
 import yc.sw3.backend.domain.user.UserRepository;
+import yc.sw3.backend.dto.PageResponse;
 import yc.sw3.backend.dto.PostDto;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -58,6 +65,33 @@ class CommunityServiceTest {
         assertThat(postId).isNotNull();
         verify(postRepository, times(1)).save(any());
         verify(gamificationService, times(1)).awardPoints(eq(authorId), anyInt(), any());
+    }
+
+    @Test
+    @DisplayName("게시글 목록 페이징 및 검색 조회 성공")
+    void getPosts_Success() {
+        PostCategory category = PostCategory.QNA;
+        String keyword = "검색어";
+        Pageable pageable = PageRequest.of(0, 10);
+        
+        User author = User.builder().id(UUID.randomUUID()).name("작성자").build();
+        Post post = Post.builder()
+                .id(UUID.randomUUID())
+                .title("검색어 포함 제목")
+                .content("내용")
+                .author(author)
+                .category(category)
+                .build();
+        
+        Page<Post> page = new PageImpl<>(List.of(post), pageable, 1);
+        
+        given(postRepository.searchPosts(eq(category), eq(keyword), any(Pageable.class))).willReturn(page);
+
+        PageResponse<PostDto.Response> response = communityService.getPosts(category, keyword, pageable);
+
+        assertThat(response.getContent()).hasSize(1);
+        assertThat(response.getContent().get(0).getTitle()).contains(keyword);
+        assertThat(response.getTotalElements()).isEqualTo(1);
     }
 
     @Test

@@ -1,12 +1,16 @@
 package yc.sw3.backend.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import yc.sw3.backend.dto.ChatDto;
+import yc.sw3.backend.dto.PageResponse;
 import yc.sw3.backend.service.ChatService;
 
 import java.util.List;
@@ -52,10 +56,11 @@ public class ChatController {
 
     @Operation(summary = "Get chat room messages")
     @GetMapping("/rooms/{roomId}/messages")
-    public ResponseEntity<List<ChatDto.MessageResponse>> getMessages(
+    public ResponseEntity<PageResponse<ChatDto.MessageResponse>> getMessages(
             @AuthenticationPrincipal UUID userId,
-            @PathVariable UUID roomId) {
-        return ResponseEntity.ok(chatService.getMessages(userId, roomId));
+            @PathVariable UUID roomId,
+            @Parameter(hidden = true) @PageableDefault(size = 50) Pageable pageable) {
+        return ResponseEntity.ok(chatService.getMessages(userId, roomId, pageable));
     }
 
     @Operation(summary = "Send chat room message without websocket")

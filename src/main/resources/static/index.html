@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SWENG3 통합 테스트 도구 (V2)</title>
+    <title>SWENG3 통합 테스트 도구 (V3 - 페이징/검색 지원)</title>
     <style>
         :root {
             --primary-color: #4A90E2;
@@ -46,6 +46,10 @@
         .status.success { background-color: #d4edda; color: #155724; }
         .status.error { background-color: #f8d7da; color: #721c24; }
 
+        /* Pagination */
+        .pagination { display: flex; justify-content: center; gap: 10px; margin-top: 15px; align-items: center; }
+        .page-info { font-size: 14px; color: #666; }
+
         /* Cards */
         .item-card { background: white; border: 1px solid #eee; padding: 15px; margin-bottom: 10px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); position: relative; }
         .item-card h4 { margin: 0 0 10px 0; padding-right: 80px; }
@@ -82,7 +86,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🚀 SWENG3 통합 테스트</h1>
+            <h1>🚀 SWENG3 통합 테스트 (V3)</h1>
             <div id="connectionStatus" style="font-size: 12px; color: var(--success-color);">● 서버 연결됨</div>
         </div>
 
@@ -174,9 +178,17 @@
                 <div style="flex: 1.5;">
                     <div style="display: flex; justify-content: space-between; align-items: center;">
                         <h2>게시글 목록</h2>
-                        <button onclick="getPosts()" class="btn-purple" style="padding: 5px 15px;">새로고침</button>
+                        <div style="display: flex; gap: 5px;">
+                            <input type="text" id="searchKeyword" placeholder="검색어 입력..." style="width: 150px; padding: 5px;">
+                            <button onclick="postPage=0; getPosts()" class="btn-purple" style="padding: 5px 15px;">검색/새로고침</button>
+                        </div>
                     </div>
                     <div id="postList" class="result-area"></div>
+                    <div class="pagination">
+                        <button id="postPrevBtn" onclick="changePostPage(-1)" style="padding: 5px 10px;">이전</button>
+                        <span id="postPageInfo" class="page-info">페이지: 1 / 1</span>
+                        <button id="postNextBtn" onclick="changePostPage(1)" style="padding: 5px 10px;">다음</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -220,10 +232,16 @@
                             <strong id="chatTitle">채팅방을 선택하세요</strong>
                             <div id="chatSocketStatus" style="font-size: 12px; color: #777; margin-top: 4px;">연결 대기</div>
                         </div>
-                        <button onclick="document.querySelector('[data-tab=&quot;mentoring&quot;]').click()" style="padding: 6px 12px; background: #6c757d;">이전 화면</button>
+                        <div style="display: flex; gap: 5px;">
+                            <button onclick="chatPage=0; loadChatMessages()" style="padding: 6px 12px; background: #28a745; font-size: 11px;">새로고침</button>
+                            <button onclick="document.querySelector('[data-tab=&quot;mentoring&quot;]').click()" style="padding: 6px 12px; background: #6c757d; font-size: 11px;">이전 화면</button>
+                        </div>
                     </div>
                     <div id="chatMessages" class="chat-messages">
                         <div class="chat-empty">채팅방을 선택하면 메시지가 표시됩니다.</div>
+                    </div>
+                    <div class="pagination" style="padding: 5px; background: #f1f1f1; border-top: 1px solid #ddd; margin-top: 0;">
+                        <button id="chatPrevBtn" onclick="changeChatPage(1)" style="padding: 3px 8px; font-size: 11px;">이전 메시지 더보기</button>
                     </div>
                     <div class="chat-input-row">
                         <input type="text" id="chatMessageInput" maxlength="1000" placeholder="메시지를 입력하세요" onkeydown="if(event.key === 'Enter') sendChatMessage();">
@@ -317,6 +335,11 @@
         let chatSocket = null;
         let currentChatRoom = null;
         
+        let postPage = 0;
+        let postTotalPages = 1;
+        let chatPage = 0;
+        let chatIsLast = true;
+        
         // --- Initialization ---
         window.addEventListener('load', () => {
             updateTokenDisplay();
@@ -326,7 +349,7 @@
 
         async function checkConnection() {
             try {
-                const res = await fetch('/api/v1/posts'); // Simple GET to check if server is up
+                const res = await fetch('/api/v1/posts'); 
                 document.getElementById('connectionStatus').innerText = "● 서버 연결됨";
                 document.getElementById('connectionStatus').style.color = "var(--success-color)";
             } catch (e) {
@@ -365,6 +388,7 @@
         // --- UI Utilities ---
         function showStatus(id, message, isError = false) {
             const el = document.getElementById(id);
+            if (!el) return;
             el.innerText = message;
             el.className = 'status visible ' + (isError ? 'error' : 'success');
             setTimeout(() => { el.className = 'status'; }, 5000);
@@ -510,6 +534,7 @@
                 showStatus('postCreateStatus', "✅ 글이 등록되었습니다.");
                 document.getElementById('postTitle').value = '';
                 document.getElementById('postContent').value = '';
+                postPage = 0;
                 getPosts();
             } else if (response) {
                 showStatus('postCreateStatus', "❌ 등록 실패", true);
@@ -520,9 +545,19 @@
             const listArea = document.getElementById('postList');
             listArea.innerHTML = "<div class='loading-spinner'></div> 로딩 중...";
 
-            const response = await apiFetch('/api/v1/posts');
+            const keyword = document.getElementById('searchKeyword').value;
+            const category = ''; // Optional: can add category filter here
+            
+            const response = await apiFetch(`/api/v1/posts?page=${postPage}&size=5&keyword=${encodeURIComponent(keyword)}`);
             if (response && response.ok) {
-                const posts = await response.json();
+                const pageData = await response.json();
+                const posts = pageData.content;
+                postTotalPages = pageData.totalPages;
+                
+                document.getElementById('postPageInfo').innerText = `페이지: ${postPage + 1} / ${postTotalPages || 1}`;
+                document.getElementById('postPrevBtn').disabled = postPage <= 0;
+                document.getElementById('postNextBtn').disabled = postPage >= postTotalPages - 1;
+
                 listArea.innerHTML = posts.map(post => `
                     <div class="item-card">
                         <span class="item-id">ID: ${post.id.substring(0,8)}</span>
@@ -545,6 +580,13 @@
                     </div>
                 `).join('') || "<div style='text-align:center; padding:20px; color:#999;'>게시글이 없습니다.</div>";
             }
+        }
+
+        function changePostPage(delta) {
+            postPage += delta;
+            if (postPage < 0) postPage = 0;
+            if (postPage >= postTotalPages) postPage = postTotalPages - 1;
+            getPosts();
         }
 
         async function addComment(postId) {
@@ -670,6 +712,8 @@
             const response = await apiFetch(`/api/v1/chats/rooms/${roomId}`);
             if (response && response.ok) {
                 const room = await response.json();
+                currentChatRoom = room;
+                chatPage = 0;
                 renderChatRoom(room);
                 connectChatSocket(room.roomId);
                 getChatRooms();
@@ -679,15 +723,38 @@
         }
 
         function renderChatRoom(room) {
-            currentChatRoom = room;
             const otherName = room.studentId === currentUserId ? room.seniorName : room.studentName;
             document.getElementById('chatTitle').innerText = `${otherName}님과의 1:1 채팅`;
             renderChatMessages(room.messages || []);
         }
 
+        async function loadChatMessages(isAppend = false) {
+            if (!currentChatRoom) return;
+            const response = await apiFetch(`/api/v1/chats/rooms/${currentChatRoom.roomId}/messages?page=${chatPage}&size=20`);
+            if (response && response.ok) {
+                const pageData = await response.json();
+                chatIsLast = pageData.isLast;
+                document.getElementById('chatPrevBtn').disabled = chatIsLast;
+                
+                if (isAppend) {
+                    const area = document.getElementById('chatMessages');
+                    const oldHeight = area.scrollHeight;
+                    pageData.content.reverse().forEach(m => prependChatMessage(m));
+                    area.scrollTop = area.scrollHeight - oldHeight;
+                } else {
+                    renderChatMessages(pageData.content);
+                }
+            }
+        }
+
+        function changeChatPage(delta) {
+            chatPage += delta;
+            loadChatMessages(true);
+        }
+
         function renderChatMessages(messages) {
             const area = document.getElementById('chatMessages');
-            if (!messages.length) {
+            if (!messages || !messages.length) {
                 area.innerHTML = "<div class='chat-empty'>아직 메시지가 없습니다. 첫 메시지를 보내보세요.</div>";
                 return;
             }
@@ -711,6 +778,19 @@
             `;
             area.appendChild(div);
             area.scrollTop = area.scrollHeight;
+        }
+
+        function prependChatMessage(message) {
+            const area = document.getElementById('chatMessages');
+            const mine = message.senderId === currentUserId;
+            const div = document.createElement('div');
+            div.className = 'chat-message' + (mine ? ' mine' : '');
+            div.innerHTML = `
+                <div class="chat-message-name">${escapeHtml(message.senderName)}</div>
+                <div style="white-space: pre-wrap;">${escapeHtml(message.content)}</div>
+                <div class="chat-message-time">${message.createdAt ? new Date(message.createdAt).toLocaleTimeString() : ''}</div>
+            `;
+            area.insertBefore(div, area.firstChild);
         }
 
         function connectChatSocket(roomId) {
