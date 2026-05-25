@@ -7,7 +7,7 @@ import java.util.UUID;
 
 public class MentoringDto {
 
-    @Getter @NoArgsConstructor @AllArgsConstructor
+    @Getter @Builder @NoArgsConstructor @AllArgsConstructor
     public static class ApplyRequest {
         private UUID mentorId;
         private String message;

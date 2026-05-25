@@ -16,7 +16,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -31,6 +31,12 @@ class CommunityServiceTest {
     private PostRepository postRepository;
     @Mock
     private UserRepository userRepository;
+    @Mock
+    private GamificationService gamificationService;
+    @Mock
+    private yc.sw3.backend.domain.community.CommentRepository commentRepository;
+    @Mock
+    private EmailService emailService;
 
     @Test
     @DisplayName("게시글 생성 성공")
@@ -51,5 +57,27 @@ class CommunityServiceTest {
 
         assertThat(postId).isNotNull();
         verify(postRepository, times(1)).save(any());
+        verify(gamificationService, times(1)).awardPoints(eq(authorId), anyInt(), any());
+    }
+
+    @Test
+    @DisplayName("댓글 추가 및 알림 발송")
+    void addComment_Success() {
+        UUID postId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        UUID authorId = UUID.randomUUID();
+
+        User author = User.builder().id(authorId).email("author@yc.ac.kr").build();
+        Post post = Post.builder().id(postId).author(author).title("Title").build();
+        User commenter = User.builder().id(userId).name("Commenter").build();
+
+        given(postRepository.findById(postId)).willReturn(Optional.of(post));
+        given(userRepository.findById(userId)).willReturn(Optional.of(commenter));
+
+        communityService.addComment(postId, userId, "Comment Content");
+
+        verify(commentRepository, times(1)).save(any());
+        verify(emailService, times(1)).sendNotification(eq(author.getEmail()), anyString(), anyString(), anyString());
+        verify(gamificationService, times(1)).awardPoints(eq(userId), anyInt(), any());
     }
 }
