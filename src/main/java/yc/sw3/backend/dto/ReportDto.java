@@ -10,7 +10,7 @@ import java.util.UUID;
 
 public class ReportDto {
 
-    @Getter @NoArgsConstructor @AllArgsConstructor
+    @Getter @Builder @NoArgsConstructor @AllArgsConstructor
     public static class CreateRequest {
         private ReportTargetType targetType;
         private UUID targetId;
