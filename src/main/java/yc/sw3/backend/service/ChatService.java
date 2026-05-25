@@ -1,6 +1,8 @@
 package yc.sw3.backend.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import yc.sw3.backend.domain.chat.*;
@@ -8,6 +10,7 @@ import yc.sw3.backend.domain.user.Role;
 import yc.sw3.backend.domain.user.User;
 import yc.sw3.backend.domain.user.UserRepository;
 import yc.sw3.backend.dto.ChatDto;
+import yc.sw3.backend.dto.PageResponse;
 
 import java.util.List;
 import java.util.UUID;
@@ -58,11 +61,10 @@ public class ChatService {
         return toRoomResponse(room, true);
     }
 
-    public List<ChatDto.MessageResponse> getMessages(UUID userId, UUID roomId) {
+    public PageResponse<ChatDto.MessageResponse> getMessages(UUID userId, UUID roomId, Pageable pageable) {
         ChatRoom room = getRoomWithAccess(userId, roomId);
-        return chatMessageRepository.findByRoomOrderByCreatedAtAsc(room).stream()
-                .map(this::toMessageResponse)
-                .collect(Collectors.toList());
+        Page<ChatMessage> messages = chatMessageRepository.findByRoomOrderByCreatedAtAsc(room, pageable);
+        return PageResponse.of(messages.map(this::toMessageResponse));
     }
 
     @Transactional
@@ -116,7 +118,7 @@ public class ChatService {
 
     private ChatDto.RoomResponse toRoomResponse(ChatRoom room, boolean includeMessages) {
         List<ChatDto.MessageResponse> messages = includeMessages
-                ? chatMessageRepository.findByRoomOrderByCreatedAtAsc(room).stream()
+                ? chatMessageRepository.findByRoomOrderByCreatedAtAsc(room, org.springframework.data.domain.Pageable.unpaged()).getContent().stream()
                         .map(this::toMessageResponse)
                         .collect(Collectors.toList())
                 : List.of();

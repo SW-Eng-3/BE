@@ -1,15 +1,19 @@
 package yc.sw3.backend.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import yc.sw3.backend.domain.community.PostCategory;
+import yc.sw3.backend.dto.PageResponse;
 import yc.sw3.backend.dto.PostDto;
 import yc.sw3.backend.service.CommunityService;
 
-import java.util.List;
 import java.util.UUID;
 
 @Tag(name = "Community", description = "커뮤니티 및 게시 API")
@@ -26,10 +30,13 @@ public class CommunityController {
         return ResponseEntity.ok(communityService.createPost(userId, request));
     }
 
-    @Operation(summary = "게시글 목록 조회", description = "카테고리별 필터링이 가능합니다.")
+    @Operation(summary = "게시글 목록 조회", description = "카테고리 필터링, 검색, 페이징을 지원합니다.")
     @GetMapping
-    public ResponseEntity<List<PostDto.Response>> getPosts(@RequestParam(required = false) yc.sw3.backend.domain.community.PostCategory category) {
-        return ResponseEntity.ok(communityService.getPosts(category));
+    public ResponseEntity<PageResponse<PostDto.Response>> getPosts(
+            @RequestParam(required = false) PostCategory category,
+            @RequestParam(required = false) String keyword,
+            @Parameter(hidden = true) @PageableDefault(size = 20) Pageable pageable) {
+        return ResponseEntity.ok(communityService.getPosts(category, keyword, pageable));
     }
 
     @Operation(summary = "게시글 상세 조회", description = "게시글 내용 및 댓글 목록을 반환합니다.")
