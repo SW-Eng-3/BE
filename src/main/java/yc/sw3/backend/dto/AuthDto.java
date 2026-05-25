@@ -7,6 +7,7 @@ import java.util.UUID;
 public class AuthDto {
 
     @Getter
+    @Builder
     @NoArgsConstructor
     @AllArgsConstructor
     public static class SignupRequest {
@@ -17,6 +18,7 @@ public class AuthDto {
     }
 
     @Getter
+    @Builder
     @NoArgsConstructor
     @AllArgsConstructor
     public static class LoginRequest {

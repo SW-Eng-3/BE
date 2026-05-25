@@ -53,7 +53,7 @@ class AuthServiceTest {
     void setUp() {
         user = User.builder()
                 .id(UUID.randomUUID())
-                .email("test@example.com")
+                .email("test@yc.ac.kr")
                 .password("encodedPassword")
                 .name("Test User")
                 .build();
@@ -63,7 +63,7 @@ class AuthServiceTest {
     @DisplayName("회원가입 성공")
     void signup_Success() {
         AuthDto.SignupRequest request = AuthDto.SignupRequest.builder()
-                .email("new@example.com")
+                .email("new@yc.ac.kr")
                 .password("password")
                 .name("New User")
                 .build();
@@ -82,7 +82,7 @@ class AuthServiceTest {
     @DisplayName("중복 이메일 회원가입 실패")
     void signup_Fail_DuplicateEmail() {
         AuthDto.SignupRequest request = AuthDto.SignupRequest.builder()
-                .email("test@example.com")
+                .email("test@yc.ac.kr")
                 .build();
 
         given(userRepository.findByEmail(anyString())).willReturn(Optional.of(user));
@@ -100,7 +100,7 @@ class AuthServiceTest {
 
         given(userRepository.findByEmail(anyString())).willReturn(Optional.of(user));
         given(passwordEncoder.matches(anyString(), anyString())).willReturn(true);
-        given(jwtTokenProvider.createToken(any(), anyString())).willReturn("jwt-token");
+        given(jwtTokenProvider.createToken(any(), anyString(), any())).willReturn("jwt-token");
 
         AuthDto.TokenResponse response = authService.login(request);
 

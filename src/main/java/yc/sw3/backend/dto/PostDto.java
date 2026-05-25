@@ -8,7 +8,7 @@ import java.util.UUID;
 
 public class PostDto {
 
-    @Getter @NoArgsConstructor @AllArgsConstructor
+    @Getter @Builder @NoArgsConstructor @AllArgsConstructor
     public static class CreateRequest {
         private String title;
         private String content;
