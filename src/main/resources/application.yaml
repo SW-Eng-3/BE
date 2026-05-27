@@ -4,7 +4,7 @@ spring:
   profiles:
     active: local
   datasource:
-    url: ${SUPABASE_DB_URL}
+    url: ${SUPABASE_DB_URL}?prepareThreshold=0
     username: ${SUPABASE_DB_USERNAME}
     password: ${SUPABASE_DB_PASSWORD}
     driver-class-name: org.postgresql.Driver

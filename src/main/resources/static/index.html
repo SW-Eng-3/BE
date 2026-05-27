@@ -17,12 +17,12 @@
         .container { max-width: 1000px; margin: 0 auto; background: var(--card-bg); padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
         h1, h2, h3 { color: #333; margin-top: 0; }
         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 20px; }
-        
+
         /* Tabs */
         .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #ddd; padding-bottom: 10px; overflow-x: auto; }
         .tab { padding: 10px 20px; cursor: pointer; border-radius: 6px; background: #eee; transition: all 0.3s; white-space: nowrap; font-weight: 500; }
         .tab.active { background: var(--primary-color); color: white; }
-        
+
         .tab-content { display: none; }
         .tab-content.active { display: block; animation: fadeIn 0.3s; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -57,7 +57,7 @@
         .item-id { font-size: 10px; color: #bbb; position: absolute; top: 15px; right: 15px; }
 
         .token-info { background: #e9ecef; padding: 15px; border-radius: 6px; font-size: 13px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid #6c757d; }
-        
+
         .loading-spinner { display: inline-block; width: 20px; height: 20px; border: 3px solid rgba(0,0,0,.1); border-radius: 50%; border-top-color: var(--primary-color); animation: spin 1s ease-in-out infinite; vertical-align: middle; margin-right: 10px; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
@@ -84,852 +84,866 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🚀 SWENG3 통합 테스트 (V3)</h1>
-            <div id="connectionStatus" style="font-size: 12px; color: var(--success-color);">● 서버 연결됨</div>
-        </div>
+<div class="container">
+    <div class="header">
+        <h1>🚀 SWENG3 통합 테스트 (V3)</h1>
+        <div id="connectionStatus" style="font-size: 12px; color: var(--success-color);">● 서버 연결됨</div>
+    </div>
 
-        <div class="token-info">
-            <div>
-                <strong id="tokenStatusText">인증 필요</strong>
-                <div id="currentTokenDisplay" style="font-family: monospace; color: #666; margin-top: 5px; font-size: 11px;">로그인하여 토큰을 발급받으세요.</div>
-            </div>
-            <button onclick="clearToken()" id="logoutBtn" style="padding: 5px 10px; background: #6c757d; font-size: 11px; display: none;">로그아웃</button>
-        </div>
-
-        <div class="tabs" id="mainTabs">
-            <div class="tab active" data-tab="auth">🔐 인증/가입</div>
-            <div class="tab" data-tab="community">💬 커뮤니티</div>
-            <div class="tab" data-tab="mentoring">👥 멘토링</div>
-            <div class="tab" data-tab="chat">🗨️ 채팅</div>
-            <div class="tab" data-tab="gamification">💎 포인트</div>
-            <div class="tab" data-tab="report">🚨 신고</div>
-            <div class="tab" data-tab="system">⚙️ 시스템</div>
-        </div>
-
-        <!-- Auth Tab -->
-        <div id="auth" class="tab-content active">
-            <div style="display: flex; gap: 30px;">
-                <div style="flex: 1; border-right: 1px solid #eee; padding-right: 30px;">
-                    <h2>1. 테스트 계정 생성</h2>
-                    <p style="font-size: 14px; color: #666;">먼저 DB에 사용자가 있어야 토큰 발급이 가능합니다.</p>
-                    <div class="form-group">
-                        <label>Email</label>
-                        <input type="email" id="signupEmail" value="rla005@naver.com">
-                    </div>
-                    <div class="form-group">
-                        <label>이름</label>
-                        <input type="text" id="signupName" value="테스터">
-                    </div>
-                    <div class="form-group">
-                        <label>역할</label>
-                        <select id="signupRole">
-                            <option value="STUDENT">학생</option>
-                            <option value="GRADUATE">졸업생</option>
-                            <option value="PROFESSOR">교수</option>
-                            <option value="ADMIN">관리자</option>
-                        </select>
-                    </div>
-                    <button onclick="quickSignup()" class="btn-success">회원가입 (Quick)</button>
-                    <div id="signupStatus" class="status"></div>
-                </div>
-                <div style="flex: 1;">
-                    <h2>2. 토큰 발급 (로그인)</h2>
-                    <p style="font-size: 14px; color: #666;">가입된 이메일로 즉시 토큰을 발급받습니다.</p>
-                    <div class="form-group">
-                        <label>Email</label>
-                        <input type="email" id="authEmail" value="rla005@naver.com">
-                    </div>
-                    <button onclick="getToken()">토큰 발급받기</button>
-                    <div id="authStatus" class="status"></div>
-                </div>
+    <div class="token-info">
+        <div>
+            <strong id="tokenStatusText">인증 필요</strong>
+            <div id="currentTokenDisplay"
+                 style="font-family: monospace; color: #666; margin-top: 5px; font-size: 11px;">로그인하여 토큰을 발급받으세요.
             </div>
         </div>
+        <button onclick="clearToken()" id="logoutBtn"
+                style="padding: 5px 10px; background: #6c757d; font-size: 11px; display: none;">로그아웃
+        </button>
+    </div>
 
-        <!-- Community Tab -->
-        <div id="community" class="tab-content">
-            <div style="display: flex; gap: 20px;">
-                <div style="flex: 1;">
-                    <h2>게시글 작성</h2>
-                    <div class="form-group">
-                        <label>제목</label>
-                        <input type="text" id="postTitle" placeholder="글 제목">
-                    </div>
-                    <div class="form-group">
-                        <label>카테고리</label>
-                        <select id="postCategory">
-                            <option value="FREE">자유게시판</option>
-                            <option value="JOB">취업/진로</option>
-                            <option value="QA">Q&A</option>
-                            <option value="PROFESSOR_NOTICE">전공 공지</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>내용</label>
-                        <textarea id="postContent" placeholder="여기에 내용을 입력하세요..."></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label><input type="checkbox" id="postAnonymous"> 익명으로 작성</label>
-                    </div>
-                    <button onclick="createPost()">게시글 등록</button>
-                    <div id="postCreateStatus" class="status"></div>
-                </div>
-                <div style="flex: 1.5;">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <h2>게시글 목록</h2>
-                        <div style="display: flex; gap: 5px;">
-                            <input type="text" id="searchKeyword" placeholder="검색어 입력..." style="width: 150px; padding: 5px;">
-                            <button onclick="postPage=0; getPosts()" class="btn-purple" style="padding: 5px 15px;">검색/새로고침</button>
-                        </div>
-                    </div>
-                    <div id="postList" class="result-area"></div>
-                    <div class="pagination">
-                        <button id="postPrevBtn" onclick="changePostPage(-1)" style="padding: 5px 10px;">이전</button>
-                        <span id="postPageInfo" class="page-info">페이지: 1 / 1</span>
-                        <button id="postNextBtn" onclick="changePostPage(1)" style="padding: 5px 10px;">다음</button>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div class="tabs" id="mainTabs">
+        <div class="tab active" data-tab="auth">🔐 인증/가입</div>
+        <div class="tab" data-tab="community">💬 커뮤니티</div>
+        <div class="tab" data-tab="mentoring">👥 멘토링</div>
+        <div class="tab" data-tab="chat">🗨️ 채팅</div>
+        <div class="tab" data-tab="gamification">💎 포인트</div>
+        <div class="tab" data-tab="report">🚨 신고</div>
+        <div class="tab" data-tab="system">⚙️ 시스템</div>
+    </div>
 
-        <!-- Mentoring Tab -->
-        <div id="mentoring" class="tab-content">
-            <div style="display: flex; gap: 20px;">
-                <div style="flex: 1;">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <h2>멘토 목록</h2>
-                        <button onclick="getMentors()" class="btn-purple" style="padding: 5px 15px;">새로고침</button>
-                    </div>
-                    <div id="mentorList" class="result-area"></div>
-                </div>
-                <div style="flex: 1;">
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <h2>내 신청 현황</h2>
-                        <button onclick="getMyMentoring()" class="btn-purple" style="padding: 5px 15px;">새로고침</button>
-                    </div>
-                    <div id="myMentoringList" class="result-area"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Chat Tab -->
-        <div id="chat" class="tab-content">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-                <h2>선배와 1:1 채팅</h2>
-                <button onclick="getChatRooms()" class="btn-purple" style="padding: 5px 15px;">새로고침</button>
-            </div>
-            <div class="chat-layout">
-                <div>
-                    <h3 style="font-size: 16px;">채팅방</h3>
-                    <div id="chatRoomList" class="chat-room-list">
-                        <div class="chat-empty">멘토 목록에서 1:1 채팅을 시작하세요.</div>
-                    </div>
-                </div>
-                <div class="chat-panel">
-                    <div class="chat-header">
-                        <div>
-                            <strong id="chatTitle">채팅방을 선택하세요</strong>
-                            <div id="chatSocketStatus" style="font-size: 12px; color: #777; margin-top: 4px;">연결 대기</div>
-                        </div>
-                        <div style="display: flex; gap: 5px;">
-                            <button onclick="chatPage=0; loadChatMessages()" style="padding: 6px 12px; background: #28a745; font-size: 11px;">새로고침</button>
-                            <button onclick="document.querySelector('[data-tab=&quot;mentoring&quot;]').click()" style="padding: 6px 12px; background: #6c757d; font-size: 11px;">이전 화면</button>
-                        </div>
-                    </div>
-                    <div id="chatMessages" class="chat-messages">
-                        <div class="chat-empty">채팅방을 선택하면 메시지가 표시됩니다.</div>
-                    </div>
-                    <div class="pagination" style="padding: 5px; background: #f1f1f1; border-top: 1px solid #ddd; margin-top: 0;">
-                        <button id="chatPrevBtn" onclick="changeChatPage(1)" style="padding: 3px 8px; font-size: 11px;">이전 메시지 더보기</button>
-                    </div>
-                    <div class="chat-input-row">
-                        <input type="text" id="chatMessageInput" maxlength="1000" placeholder="메시지를 입력하세요" onkeydown="if(event.key === 'Enter') sendChatMessage();">
-                        <button onclick="sendChatMessage()">전송</button>
-                    </div>
-                </div>
-            </div>
-            <div id="chatStatus" class="status"></div>
-        </div>
-
-        <!-- Gamification Tab -->
-        <div id="gamification" class="tab-content">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <h2>내 포인트 정보</h2>
-                <button onclick="getPoints()" class="btn-purple">새로고침</button>
-            </div>
-            <div style="display: flex; gap: 20px; align-items: center; margin-bottom: 20px; margin-top: 10px;">
-                <div style="background: #fff3cd; padding: 20px; border-radius: 12px; text-align: center; flex: 1; border: 1px solid #ffeeba;">
-                    <div style="font-size: 14px; color: #856404;">현재 포인트</div>
-                    <div id="totalPoints" style="font-size: 32px; font-weight: bold; color: #856404;">0 P</div>
-                </div>
-                <div style="flex: 2;">
-                    <p style="font-size: 14px; color: #666;">글을 쓰거나 멘토링을 완료하면 포인트가 쌓입니다.</p>
-                </div>
-            </div>
-            <h3>포인트 히스토리</h3>
-            <div id="pointHistory" class="result-area"></div>
-        </div>
-
-        <!-- Report Tab -->
-        <div id="report" class="tab-content">
-            <h2>신고하기</h2>
-            <div style="max-width: 600px;">
+    <!-- Auth Tab -->
+    <div id="auth" class="tab-content active">
+        <div style="display: flex; gap: 30px;">
+            <div style="flex: 1; border-right: 1px solid #eee; padding-right: 30px;">
+                <h2>1. 테스트 계정 생성</h2>
+                <p style="font-size: 14px; color: #666;">먼저 DB에 사용자가 있어야 토큰 발급이 가능합니다.</p>
                 <div class="form-group">
-                    <label>대상 타입</label>
-                    <select id="reportTargetType">
-                        <option value="POST">게시글</option>
-                        <option value="COMMENT">댓글</option>
-                        <option value="USER">사용자</option>
+                    <label>Email</label>
+                    <input type="email" id="signupEmail" value="rla005@naver.com">
+                </div>
+                <div class="form-group">
+                    <label>이름</label>
+                    <input type="text" id="signupName" value="테스터">
+                </div>
+                <div class="form-group">
+                    <label>역할</label>
+                    <select id="signupRole">
+                        <option value="STUDENT">학생</option>
+                        <option value="GRADUATE">졸업생</option>
+                        <option value="PROFESSOR">교수</option>
+                        <option value="ADMIN">관리자</option>
+                    </select>
+                </div>
+                <button onclick="quickSignup()" class="btn-success">회원가입 (Quick)</button>
+                <div id="signupStatus" class="status"></div>
+            </div>
+            <div style="flex: 1;">
+                <h2>2. 토큰 발급 (로그인)</h2>
+                <p style="font-size: 14px; color: #666;">가입된 이메일로 즉시 토큰을 발급받습니다.</p>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="authEmail" value="rla005@naver.com">
+                </div>
+                <button onclick="getToken()">토큰 발급받기</button>
+                <div id="authStatus" class="status"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Community Tab -->
+    <div id="community" class="tab-content">
+        <div style="display: flex; gap: 20px;">
+            <div style="flex: 1;">
+                <h2>게시글 작성</h2>
+                <div class="form-group">
+                    <label>제목</label>
+                    <input type="text" id="postTitle" placeholder="글 제목">
+                </div>
+                <div class="form-group">
+                    <label>카테고리</label>
+                    <select id="postCategory">
+                        <option value="FREE">자유게시판</option>
+                        <option value="JOB">취업/진로</option>
+                        <option value="QA">Q&A</option>
+                        <option value="PROFESSOR_NOTICE">전공 공지</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>대상 ID (UUID)</label>
-                    <input type="text" id="reportTargetId" placeholder="예: 550e8400-e29b-41d4-a716-446655440000">
+                    <label>내용</label>
+                    <textarea id="postContent" placeholder="여기에 내용을 입력하세요..."></textarea>
                 </div>
                 <div class="form-group">
-                    <label>신고 사유</label>
-                    <select id="reportReason">
-                        <option value="SPAM">스팸/영리적 홍보</option>
-                        <option value="INAPPROPRIATE_CONTENT">부적절한 콘텐츠</option>
-                        <option value="ABUSIVE_LANGUAGE">욕설/비하 발언</option>
-                        <option value="HARASSMENT">괴롭힘/사생활 침해</option>
-                        <option value="FRAUD">사기/허위 정보</option>
-                        <option value="OTHER">기타</option>
-                    </select>
+                    <label><input type="checkbox" id="postAnonymous"> 익명으로 작성</label>
                 </div>
-                <div class="form-group">
-                    <label>상세 설명</label>
-                    <textarea id="reportDescription" placeholder="신고 사유에 대한 상세 내용을 적어주세요."></textarea>
-                </div>
-                <button onclick="submitReport()" class="btn-error">신고 제출</button>
-                <div id="reportStatus" class="status"></div>
+                <button onclick="createPost()">게시글 등록</button>
+                <div id="postCreateStatus" class="status"></div>
             </div>
-        </div>
-
-        <!-- System Tab -->
-        <div id="system" class="tab-content">
-            <h2>시스템 유틸리티</h2>
-            <div style="display: flex; gap: 20px;">
-                <div style="flex: 1; background: #f8f9fa; padding: 20px; border-radius: 8px;">
-                    <h3>메일 발송 테스트</h3>
-                    <div class="form-group">
-                        <label>수신 이메일</label>
-                        <input type="email" id="testEmailAddr" placeholder="test@example.com">
+            <div style="flex: 1.5;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h2>게시글 목록</h2>
+                    <div style="display: flex; gap: 5px;">
+                        <input type="text" id="searchKeyword" placeholder="검색어 입력..."
+                               style="width: 150px; padding: 5px;">
+                        <button onclick="postPage=0; getPosts()" class="btn-purple" style="padding: 5px 15px;">검색/새로고침
+                        </button>
                     </div>
-                    <button onclick="testEmail()">테스트 메일 발송</button>
-                    <div id="emailStatus" class="status"></div>
                 </div>
-                <div style="flex: 1; background: #f8f9fa; padding: 20px; border-radius: 8px;">
-                    <h3>기타 유틸리티</h3>
-                    <p style="font-size: 14px; color: #666;">추가 개발 도구가 여기에 추가됩니다.</p>
+                <div id="postList" class="result-area"></div>
+                <div class="pagination">
+                    <button id="postPrevBtn" onclick="changePostPage(-1)" style="padding: 5px 10px;">이전</button>
+                    <span id="postPageInfo" class="page-info">페이지: 1 / 1</span>
+                    <button id="postNextBtn" onclick="changePostPage(1)" style="padding: 5px 10px;">다음</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <script>
-        // --- Global State ---
-        let accessToken = localStorage.getItem('accessToken');
-        let currentUserId = localStorage.getItem('userId');
-        let chatSocket = null;
-        let currentChatRoom = null;
-        
-        let postPage = 0;
-        let postTotalPages = 1;
-        let chatPage = 0;
-        let chatIsLast = true;
-        
-        // --- Initialization ---
-        window.addEventListener('load', () => {
-            updateTokenDisplay();
-            checkConnection();
-        });
-        window.addEventListener('beforeunload', disconnectChatSocket);
+    <!-- Mentoring Tab -->
+    <div id="mentoring" class="tab-content">
+        <div style="display: flex; gap: 20px;">
+            <div style="flex: 1;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h2>멘토 목록</h2>
+                    <button onclick="getMentors()" class="btn-purple" style="padding: 5px 15px;">새로고침</button>
+                </div>
+                <div id="mentorList" class="result-area"></div>
+            </div>
+            <div style="flex: 1;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h2>내 신청 현황</h2>
+                    <button onclick="getMyMentoring()" class="btn-purple" style="padding: 5px 15px;">새로고침</button>
+                </div>
+                <div id="myMentoringList" class="result-area"></div>
+            </div>
+        </div>
+    </div>
 
-        async function checkConnection() {
-            try {
-                const res = await fetch('/api/v1/posts'); 
-                document.getElementById('connectionStatus').innerText = "● 서버 연결됨";
-                document.getElementById('connectionStatus').style.color = "var(--success-color)";
-            } catch (e) {
-                document.getElementById('connectionStatus').innerText = "● 서버 연결 안됨 (네트워크 확인)";
-                document.getElementById('connectionStatus').style.color = "var(--error-color)";
-            }
+    <!-- Chat Tab -->
+    <div id="chat" class="tab-content">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+            <h2>선배와 1:1 채팅</h2>
+            <button onclick="getChatRooms()" class="btn-purple" style="padding: 5px 15px;">새로고침</button>
+        </div>
+        <div class="chat-layout">
+            <div>
+                <h3 style="font-size: 16px;">채팅방</h3>
+                <div id="chatRoomList" class="chat-room-list">
+                    <div class="chat-empty">멘토 목록에서 1:1 채팅을 시작하세요.</div>
+                </div>
+            </div>
+            <div class="chat-panel">
+                <div class="chat-header">
+                    <div>
+                        <strong id="chatTitle">채팅방을 선택하세요</strong>
+                        <div id="chatSocketStatus" style="font-size: 12px; color: #777; margin-top: 4px;">연결 대기</div>
+                    </div>
+                    <div style="display: flex; gap: 5px;">
+                        <button onclick="chatPage=0; loadChatMessages()"
+                                style="padding: 6px 12px; background: #28a745; font-size: 11px;">새로고침
+                        </button>
+                        <button onclick="document.querySelector('[data-tab=&quot;mentoring&quot;]').click()"
+                                style="padding: 6px 12px; background: #6c757d; font-size: 11px;">이전 화면
+                        </button>
+                    </div>
+                </div>
+                <div id="chatMessages" class="chat-messages">
+                    <div class="chat-empty">채팅방을 선택하면 메시지가 표시됩니다.</div>
+                </div>
+                <div class="pagination"
+                     style="padding: 5px; background: #f1f1f1; border-top: 1px solid #ddd; margin-top: 0;">
+                    <button id="chatPrevBtn" onclick="changeChatPage(1)" style="padding: 3px 8px; font-size: 11px;">이전
+                        메시지 더보기
+                    </button>
+                </div>
+                <div class="chat-input-row">
+                    <input type="text" id="chatMessageInput" maxlength="1000" placeholder="메시지를 입력하세요"
+                           onkeydown="if(event.key === 'Enter') sendChatMessage();">
+                    <button onclick="sendChatMessage()">전송</button>
+                </div>
+            </div>
+        </div>
+        <div id="chatStatus" class="status"></div>
+    </div>
+
+    <!-- Gamification Tab -->
+    <div id="gamification" class="tab-content">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h2>내 포인트 정보</h2>
+            <button onclick="getPoints()" class="btn-purple">새로고침</button>
+        </div>
+        <div style="display: flex; gap: 20px; align-items: center; margin-bottom: 20px; margin-top: 10px;">
+            <div style="background: #fff3cd; padding: 20px; border-radius: 12px; text-align: center; flex: 1; border: 1px solid #ffeeba;">
+                <div style="font-size: 14px; color: #856404;">현재 포인트</div>
+                <div id="totalPoints" style="font-size: 32px; font-weight: bold; color: #856404;">0 P</div>
+            </div>
+            <div style="flex: 2;">
+                <p style="font-size: 14px; color: #666;">글을 쓰거나 멘토링을 완료하면 포인트가 쌓입니다.</p>
+            </div>
+        </div>
+        <h3>포인트 히스토리</h3>
+        <div id="pointHistory" class="result-area"></div>
+    </div>
+
+    <!-- Report Tab -->
+    <div id="report" class="tab-content">
+        <h2>신고하기</h2>
+        <div style="max-width: 600px;">
+            <div class="form-group">
+                <label>대상 타입</label>
+                <select id="reportTargetType">
+                    <option value="POST">게시글</option>
+                    <option value="COMMENT">댓글</option>
+                    <option value="USER">사용자</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>대상 ID (UUID)</label>
+                <input type="text" id="reportTargetId" placeholder="예: 550e8400-e29b-41d4-a716-446655440000">
+            </div>
+            <div class="form-group">
+                <label>신고 사유</label>
+                <select id="reportReason">
+                    <option value="SPAM">스팸/영리적 홍보</option>
+                    <option value="INAPPROPRIATE_CONTENT">부적절한 콘텐츠</option>
+                    <option value="ABUSIVE_LANGUAGE">욕설/비하 발언</option>
+                    <option value="HARASSMENT">괴롭힘/사생활 침해</option>
+                    <option value="FRAUD">사기/허위 정보</option>
+                    <option value="OTHER">기타</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>상세 설명</label>
+                <textarea id="reportDescription" placeholder="신고 사유에 대한 상세 내용을 적어주세요."></textarea>
+            </div>
+            <button onclick="submitReport()" class="btn-error">신고 제출</button>
+            <div id="reportStatus" class="status"></div>
+        </div>
+    </div>
+
+    <!-- System Tab -->
+    <div id="system" class="tab-content">
+        <h2>시스템 유틸리티</h2>
+        <div style="display: flex; gap: 20px;">
+            <div style="flex: 1; background: #f8f9fa; padding: 20px; border-radius: 8px;">
+                <h3>메일 발송 테스트</h3>
+                <div class="form-group">
+                    <label>수신 이메일</label>
+                    <input type="email" id="testEmailAddr" placeholder="test@example.com">
+                </div>
+                <button onclick="testEmail()">테스트 메일 발송</button>
+                <div id="emailStatus" class="status"></div>
+            </div>
+            <div style="flex: 1; background: #f8f9fa; padding: 20px; border-radius: 8px;">
+                <h3>기타 유틸리티</h3>
+                <p style="font-size: 14px; color: #666;">추가 개발 도구가 여기에 추가됩니다.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- Global State ---
+    let accessToken = localStorage.getItem('accessToken');
+    let currentUserId = localStorage.getItem('userId');
+    let chatSocket = null;
+    let currentChatRoom = null;
+
+    let postPage = 0;
+    let postTotalPages = 1;
+    let chatPage = 0;
+    let chatIsLast = true;
+
+    // --- Initialization ---
+    window.addEventListener('load', () => {
+        updateTokenDisplay();
+        checkConnection();
+    });
+    window.addEventListener('beforeunload', disconnectChatSocket);
+
+    async function checkConnection() {
+        try {
+            const res = await fetch('/api/v1/posts');
+            document.getElementById('connectionStatus').innerText = "● 서버 연결됨";
+            document.getElementById('connectionStatus').style.color = "var(--success-color)";
+        } catch (e) {
+            document.getElementById('connectionStatus').innerText = "● 서버 연결 안됨 (네트워크 확인)";
+            document.getElementById('connectionStatus').style.color = "var(--error-color)";
         }
+    }
 
-        // --- Tab Switching Logic ---
-        document.getElementById('mainTabs').addEventListener('click', (e) => {
-            const tab = e.target.closest('.tab');
-            if (!tab) return;
+    // --- Tab Switching Logic ---
+    document.getElementById('mainTabs').addEventListener('click', (e) => {
+        const tab = e.target.closest('.tab');
+        if (!tab) return;
 
-            const tabId = tab.dataset.tab;
-            
-            // UI Update
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            
-            document.getElementById(tabId).classList.add('active');
-            tab.classList.add('active');
+        const tabId = tab.dataset.tab;
 
-            if (tabId !== 'chat') {
-                disconnectChatSocket();
-            }
+        // UI Update
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
 
-            // Auto-load data if authenticated
-            if (accessToken) {
-                if (tabId === 'community') getPosts();
-                if (tabId === 'mentoring') { getMentors(); getMyMentoring(); }
-                if (tabId === 'chat') getChatRooms();
-                if (tabId === 'gamification') getPoints();
-            }
-        });
+        document.getElementById(tabId).classList.add('active');
+        tab.classList.add('active');
 
-        // --- UI Utilities ---
-        function showStatus(id, message, isError = false) {
-            const el = document.getElementById(id);
-            if (!el) return;
-            el.innerText = message;
-            el.className = 'status visible ' + (isError ? 'error' : 'success');
-            setTimeout(() => { el.className = 'status'; }, 5000);
-        }
-
-        function updateTokenDisplay() {
-            const statusText = document.getElementById('tokenStatusText');
-            const display = document.getElementById('currentTokenDisplay');
-            const logoutBtn = document.getElementById('logoutBtn');
-            
-            if (accessToken) {
-                currentUserId = currentUserId || getUserIdFromToken(accessToken);
-                if (currentUserId) localStorage.setItem('userId', currentUserId);
-                statusText.innerText = "✅ 인증 완료";
-                statusText.style.color = "var(--success-color)";
-                display.innerText = "Token: " + accessToken.substring(0, 30) + "...";
-                logoutBtn.style.display = "block";
-            } else {
-                statusText.innerText = "인증 필요";
-                statusText.style.color = "#666";
-                display.innerText = "로그인하여 토큰을 발급받으세요.";
-                logoutBtn.style.display = "none";
-            }
-        }
-
-        function clearToken() {
+        if (tabId !== 'chat') {
             disconnectChatSocket();
-            accessToken = null;
-            currentUserId = null;
-            currentChatRoom = null;
-            localStorage.removeItem('accessToken');
-            localStorage.removeItem('userId');
+        }
+
+        // Auto-load data if authenticated
+        if (accessToken) {
+            if (tabId === 'community') getPosts();
+            if (tabId === 'mentoring') { getMentors(); getMyMentoring(); }
+            if (tabId === 'chat') getChatRooms();
+            if (tabId === 'gamification') getPoints();
+        }
+    });
+
+    // --- UI Utilities ---
+    function showStatus(id, message, isError = false) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.innerText = message;
+        el.className = 'status visible ' + (isError ? 'error' : 'success');
+        setTimeout(() => { el.className = 'status'; }, 5000);
+    }
+
+    function updateTokenDisplay() {
+        const statusText = document.getElementById('tokenStatusText');
+        const display = document.getElementById('currentTokenDisplay');
+        const logoutBtn = document.getElementById('logoutBtn');
+
+        if (accessToken) {
+            currentUserId = currentUserId || getUserIdFromToken(accessToken);
+            if (currentUserId) localStorage.setItem('userId', currentUserId);
+            statusText.innerText = "✅ 인증 완료";
+            statusText.style.color = "var(--success-color)";
+            display.innerText = "Token: " + accessToken.substring(0, 30) + "...";
+            logoutBtn.style.display = "block";
+        } else {
+            statusText.innerText = "인증 필요";
+            statusText.style.color = "#666";
+            display.innerText = "로그인하여 토큰을 발급받으세요.";
+            logoutBtn.style.display = "none";
+        }
+    }
+
+    function clearToken() {
+        disconnectChatSocket();
+        accessToken = null;
+        currentUserId = null;
+        currentChatRoom = null;
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('userId');
+        updateTokenDisplay();
+        alert("로그아웃 되었습니다.");
+    }
+
+    function getUserIdFromToken(token) {
+        try {
+            const payload = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+            return JSON.parse(atob(payload)).sub;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    function escapeHtml(value) {
+        return String(value ?? '')
+            .replaceAll('&', '&amp;')
+            .replaceAll('<', '&lt;')
+            .replaceAll('>', '&gt;')
+            .replaceAll('"', '&quot;')
+            .replaceAll("'", '&#039;');
+    }
+
+    // --- API wrapper ---
+    async function apiFetch(url, options = {}) {
+        if (!accessToken && !url.includes('/test/token') && !url.includes('/auth/signup')) {
+            alert("토큰이 없습니다. '인증' 탭에서 먼저 로그인을 해주세요.");
+            return null;
+        }
+
+        const headers = {
+            'Content-Type': 'application/json',
+            ...options.headers
+        };
+
+        if (accessToken) {
+            headers['Authorization'] = `Bearer ${accessToken}`;
+        }
+
+        try {
+            const response = await fetch(url, { ...options, headers });
+            if (response.status === 401) {
+                alert("인증 세션이 만료되었습니다. 다시 로그인해주세요.");
+                clearToken();
+                return null;
+            }
+            return response;
+        } catch (e) {
+            console.error("API Fetch Error:", e);
+            alert("서버 통신 중 오류가 발생했습니다. 서버가 실행 중인지 확인하세요.");
+            return null;
+        }
+    }
+
+    // --- 1. Auth & Signup ---
+    async function quickSignup() {
+        const email = document.getElementById('signupEmail').value;
+        const name = document.getElementById('signupName').value;
+        const role = document.getElementById('signupRole').value;
+
+        const payload = { email, name, role, password: 'password123' };
+
+        const response = await apiFetch('/api/v1/auth/signup', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+
+        if (response && response.ok) {
+            showStatus('signupStatus', "✅ 가입 성공! 이제 토큰을 발급받으세요.");
+        } else if (response) {
+            const err = await response.text();
+            showStatus('signupStatus', "❌ 가입 실패: " + (err || "중복된 이메일일 수 있습니다."), true);
+        }
+    }
+
+    async function getToken() {
+        const email = document.getElementById('authEmail').value;
+        const response = await fetch(`/api/v1/test/token?email=${encodeURIComponent(email)}`, { method: 'POST' });
+
+        if (response.ok) {
+            const data = await response.json();
+            accessToken = data.accessToken;
+            currentUserId = data.userId;
+            localStorage.setItem('accessToken', accessToken);
+            localStorage.setItem('userId', currentUserId);
             updateTokenDisplay();
-            alert("로그아웃 되었습니다.");
+            showStatus('authStatus', "✅ 인증 성공! 다른 탭의 기능을 사용해보세요.");
+        } else {
+            const error = await response.text();
+            showStatus('authStatus', "❌ 인증 실패: " + (error || "사용자를 찾을 수 없습니다."), true);
         }
+    }
 
-        function getUserIdFromToken(token) {
-            try {
-                const payload = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-                return JSON.parse(atob(payload)).sub;
-            } catch (e) {
-                return null;
-            }
+    // --- 2. Community ---
+    async function createPost() {
+        const title = document.getElementById('postTitle').value;
+        const content = document.getElementById('postContent').value;
+        if (!title || !content) { alert("제목과 내용을 입력하세요."); return; }
+
+        const payload = {
+            title, content,
+            category: document.getElementById('postCategory').value,
+            isAnonymous: document.getElementById('postAnonymous').checked
+        };
+
+        const response = await apiFetch('/api/v1/posts', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+
+        if (response && response.ok) {
+            showStatus('postCreateStatus', "✅ 글이 등록되었습니다.");
+            document.getElementById('postTitle').value = '';
+            document.getElementById('postContent').value = '';
+            postPage = 0;
+            getPosts();
+        } else if (response) {
+            showStatus('postCreateStatus', "❌ 등록 실패", true);
         }
+    }
 
-        function escapeHtml(value) {
-            return String(value ?? '')
-                .replaceAll('&', '&amp;')
-                .replaceAll('<', '&lt;')
-                .replaceAll('>', '&gt;')
-                .replaceAll('"', '&quot;')
-                .replaceAll("'", '&#039;');
-        }
+    async function getPosts() {
+        const listArea = document.getElementById('postList');
+        listArea.innerHTML = "<div class='loading-spinner'></div> 로딩 중...";
 
-        // --- API wrapper ---
-        async function apiFetch(url, options = {}) {
-            if (!accessToken && !url.includes('/test/token') && !url.includes('/auth/signup')) {
-                alert("토큰이 없습니다. '인증' 탭에서 먼저 로그인을 해주세요.");
-                return null;
-            }
+        const keyword = document.getElementById('searchKeyword').value;
+        const category = ''; // Optional: can add category filter here
 
-            const headers = {
-                'Content-Type': 'application/json',
-                ...options.headers
-            };
+        const response = await apiFetch(`/api/v1/posts?page=${postPage}&size=5&keyword=${encodeURIComponent(keyword)}`);
+        if (response && response.ok) {
+            const pageData = await response.json();
+            const posts = pageData.content;
+            postTotalPages = pageData.totalPages;
 
-            if (accessToken) {
-                headers['Authorization'] = `Bearer ${accessToken}`;
-            }
+            document.getElementById('postPageInfo').innerText = `페이지: ${postPage + 1} / ${postTotalPages || 1}`;
+            document.getElementById('postPrevBtn').disabled = postPage <= 0;
+            document.getElementById('postNextBtn').disabled = postPage >= postTotalPages - 1;
 
-            try {
-                const response = await fetch(url, { ...options, headers });
-                if (response.status === 401) {
-                    alert("인증 세션이 만료되었습니다. 다시 로그인해주세요.");
-                    clearToken();
-                    return null;
-                }
-                return response;
-            } catch (e) {
-                console.error("API Fetch Error:", e);
-                alert("서버 통신 중 오류가 발생했습니다. 서버가 실행 중인지 확인하세요.");
-                return null;
-            }
-        }
-
-        // --- 1. Auth & Signup ---
-        async function quickSignup() {
-            const email = document.getElementById('signupEmail').value;
-            const name = document.getElementById('signupName').value;
-            const role = document.getElementById('signupRole').value;
-
-            const payload = { email, name, role, password: 'password123' };
-            
-            const response = await apiFetch('/api/v1/auth/signup', {
-                method: 'POST',
-                body: JSON.stringify(payload)
-            });
-
-            if (response && response.ok) {
-                showStatus('signupStatus', "✅ 가입 성공! 이제 토큰을 발급받으세요.");
-            } else if (response) {
-                const err = await response.text();
-                showStatus('signupStatus', "❌ 가입 실패: " + (err || "중복된 이메일일 수 있습니다."), true);
-            }
-        }
-
-        async function getToken() {
-            const email = document.getElementById('authEmail').value;
-            const response = await fetch(`/api/v1/test/token?email=${encodeURIComponent(email)}`, { method: 'POST' });
-
-            if (response.ok) {
-                const data = await response.json();
-                accessToken = data.accessToken;
-                currentUserId = data.userId;
-                localStorage.setItem('accessToken', accessToken);
-                localStorage.setItem('userId', currentUserId);
-                updateTokenDisplay();
-                showStatus('authStatus', "✅ 인증 성공! 다른 탭의 기능을 사용해보세요.");
-            } else {
-                const error = await response.text();
-                showStatus('authStatus', "❌ 인증 실패: " + (error || "사용자를 찾을 수 없습니다."), true);
-            }
-        }
-
-        // --- 2. Community ---
-        async function createPost() {
-            const title = document.getElementById('postTitle').value;
-            const content = document.getElementById('postContent').value;
-            if (!title || !content) { alert("제목과 내용을 입력하세요."); return; }
-
-            const payload = {
-                title, content,
-                category: document.getElementById('postCategory').value,
-                isAnonymous: document.getElementById('postAnonymous').checked
-            };
-
-            const response = await apiFetch('/api/v1/posts', {
-                method: 'POST',
-                body: JSON.stringify(payload)
-            });
-
-            if (response && response.ok) {
-                showStatus('postCreateStatus', "✅ 글이 등록되었습니다.");
-                document.getElementById('postTitle').value = '';
-                document.getElementById('postContent').value = '';
-                postPage = 0;
-                getPosts();
-            } else if (response) {
-                showStatus('postCreateStatus', "❌ 등록 실패", true);
-            }
-        }
-
-        async function getPosts() {
-            const listArea = document.getElementById('postList');
-            listArea.innerHTML = "<div class='loading-spinner'></div> 로딩 중...";
-
-            const keyword = document.getElementById('searchKeyword').value;
-            const category = ''; // Optional: can add category filter here
-            
-            const response = await apiFetch(`/api/v1/posts?page=${postPage}&size=5&keyword=${encodeURIComponent(keyword)}`);
-            if (response && response.ok) {
-                const pageData = await response.json();
-                const posts = pageData.content;
-                postTotalPages = pageData.totalPages;
-                
-                document.getElementById('postPageInfo').innerText = `페이지: ${postPage + 1} / ${postTotalPages || 1}`;
-                document.getElementById('postPrevBtn').disabled = postPage <= 0;
-                document.getElementById('postNextBtn').disabled = postPage >= postTotalPages - 1;
-
-                listArea.innerHTML = posts.map(post => `
-                    <div class="item-card">
-                        <span class="item-id">ID: ${post.id.substring(0,8)}</span>
-                        <h4>${post.title}</h4>
-                        <div class="item-meta">작성자: ${post.authorName || '익명'} | ${post.category} | ${new Date(post.createdAt).toLocaleString()}</div>
-                        <p style="font-size: 14px; white-space: pre-wrap; color: #444;">${post.content}</p>
-                        <div style="margin-top: 15px; border-top: 1px solid #eee; padding-top: 10px;">
-                            <div style="font-size: 12px; font-weight: bold; margin-bottom: 8px;">댓글 (${post.comments ? post.comments.length : 0})</div>
-                            ${(post.comments || []).map(c => `
-                                <div style="font-size: 13px; margin-bottom: 5px; color: #666;">
-                                    <b>${c.authorName}:</b> ${c.content}
-                                </div>
-                            `).join('')}
-                            <div style="display: flex; gap: 5px; margin-top: 10px;">
-                                <input type="text" placeholder="댓글 내용..." id="cmt-${post.id}" style="padding: 6px; font-size: 12px;">
-                                <button onclick="addComment('${post.id}')" style="padding: 6px 12px; font-size: 12px;">등록</button>
-                                <button onclick="reportItem('POST', '${post.id}')" style="padding: 6px 12px; font-size: 12px; background: #dc3545;">신고</button>
+            listArea.innerHTML = posts.map(post => `
+                <div class="item-card">
+                    <span class="item-id">ID: ${post.id.substring(0,8)}</span>
+                    <h4>${post.title}</h4>
+                    <div class="item-meta">작성자: ${post.authorName || '익명'} | ${post.category} | ${new Date(post.createdAt).toLocaleString()}</div>
+                    <p style="font-size: 14px; white-space: pre-wrap; color: #444;">${post.content}</p>
+                    <div style="margin-top: 15px; border-top: 1px solid #eee; padding-top: 10px;">
+                        <div style="font-size: 12px; font-weight: bold; margin-bottom: 8px;">댓글 (${post.comments ? post.comments.length : 0})</div>
+                        ${(post.comments || []).map(c => `
+                            <div style="font-size: 13px; margin-bottom: 5px; color: #666;">
+                                <b>${c.authorName}:</b> ${c.content}
                             </div>
+                        `).join('')}
+                        <div style="display: flex; gap: 5px; margin-top: 10px;">
+                            <input type="text" placeholder="댓글 내용..." id="cmt-${post.id}" style="padding: 6px; font-size: 12px;">
+                            <button onclick="addComment('${post.id}')" style="padding: 6px 12px; font-size: 12px;">등록</button>
+                            <button onclick="reportItem('POST', '${post.id}')" style="padding: 6px 12px; font-size: 12px; background: #dc3545;">신고</button>
                         </div>
                     </div>
-                `).join('') || "<div style='text-align:center; padding:20px; color:#999;'>게시글이 없습니다.</div>";
-            }
+                </div>
+            `).join('') || "<div style='text-align:center; padding:20px; color:#999;'>게시글이 없습니다.</div>";
         }
+    }
 
-        function changePostPage(delta) {
-            postPage += delta;
-            if (postPage < 0) postPage = 0;
-            if (postPage >= postTotalPages) postPage = postTotalPages - 1;
+    function changePostPage(delta) {
+        postPage += delta;
+        if (postPage < 0) postPage = 0;
+        if (postPage >= postTotalPages) postPage = postTotalPages - 1;
+        getPosts();
+    }
+
+    async function addComment(postId) {
+        const input = document.getElementById(`cmt-${postId}`);
+        const content = input.value;
+        if (!content) return;
+
+        const response = await apiFetch(`/api/v1/posts/${postId}/comments`, {
+            method: 'POST',
+            body: JSON.stringify({ content })
+        });
+
+        if (response && response.ok) {
+            input.value = '';
             getPosts();
         }
+    }
 
-        async function addComment(postId) {
-            const input = document.getElementById(`cmt-${postId}`);
-            const content = input.value;
-            if (!content) return;
+    // --- 3. Mentoring ---
+    async function getMentors() {
+        const listArea = document.getElementById('mentorList');
+        listArea.innerHTML = "로딩 중...";
 
-            const response = await apiFetch(`/api/v1/posts/${postId}/comments`, {
-                method: 'POST',
-                body: JSON.stringify({ content })
-            });
-
-            if (response && response.ok) {
-                input.value = '';
-                getPosts();
-            }
+        const response = await apiFetch('/api/v1/mentoring/mentors');
+        if (response && response.ok) {
+            const mentors = await response.json();
+            listArea.innerHTML = mentors.map(m => {
+                const mentorId = m.userId || m.id;
+                return `
+                <div class="item-card">
+                    <span class="item-id">ID: ${mentorId ? mentorId.substring(0,8) : '-'}</span>
+                    <h4>${escapeHtml(m.name)} (${escapeHtml(m.role)})</h4>
+                    <div class="item-meta">${escapeHtml(m.major || '전공미지정')} | ${escapeHtml(m.country || '국가미지정')}</div>
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <button onclick="applyMentoring('${mentorId}')" style="padding: 5px 15px;">멘토링 신청</button>
+                        <button onclick="openSeniorChat('${mentorId}')" class="btn-success" style="padding: 5px 15px;">1:1 채팅</button>
+                    </div>
+                </div>
+            `;
+            }).join('') || "멘토 목록이 비어있습니다.";
         }
+    }
 
-        // --- 3. Mentoring ---
-        async function getMentors() {
-            const listArea = document.getElementById('mentorList');
-            listArea.innerHTML = "로딩 중...";
+    async function applyMentoring(mentorId) {
+        const message = prompt("멘토에게 신청 메시지를 작성하세요:");
+        if (!message) return;
 
-            const response = await apiFetch('/api/v1/mentoring/mentors');
-            if (response && response.ok) {
-                const mentors = await response.json();
-                listArea.innerHTML = mentors.map(m => {
-                    const mentorId = m.userId || m.id;
-                    return `
-                    <div class="item-card">
-                        <span class="item-id">ID: ${mentorId ? mentorId.substring(0,8) : '-'}</span>
-                        <h4>${escapeHtml(m.name)} (${escapeHtml(m.role)})</h4>
-                        <div class="item-meta">${escapeHtml(m.major || '전공미지정')} | ${escapeHtml(m.country || '국가미지정')}</div>
-                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                            <button onclick="applyMentoring('${mentorId}')" style="padding: 5px 15px;">멘토링 신청</button>
-                            <button onclick="openSeniorChat('${mentorId}')" class="btn-success" style="padding: 5px 15px;">1:1 채팅</button>
-                        </div>
+        const response = await apiFetch('/api/v1/mentoring/apply', {
+            method: 'POST',
+            body: JSON.stringify({ mentorId, message })
+        });
+
+        if (response && response.ok) {
+            alert("신청이 완료되었습니다.");
+            getMyMentoring();
+        }
+    }
+
+    async function getMyMentoring() {
+        const listArea = document.getElementById('myMentoringList');
+        listArea.innerHTML = "로딩 중...";
+
+        const response = await apiFetch('/api/v1/mentoring/my-requests');
+        if (response && response.ok) {
+            const requests = await response.json();
+            listArea.innerHTML = requests.map(r => `
+                <div class="item-card">
+                    <h4>멘토: ${r.mentorName}</h4>
+                    <div class="item-meta">상태: <b style="color:var(--primary-color)">${r.status}</b> | ${new Date(r.createdAt).toLocaleString()}</div>
+                    <p style="font-size: 13px; color: #555;">메시지: "${r.message}"</p>
+                </div>
+            `).join('') || "신청 내역이 없습니다.";
+        }
+    }
+
+    // --- 4. Chat ---
+    async function getChatRooms() {
+        const listArea = document.getElementById('chatRoomList');
+        listArea.innerHTML = "<div class='loading-spinner'></div> 로딩 중...";
+
+        const response = await apiFetch('/api/v1/chats/rooms');
+        if (response && response.ok) {
+            const rooms = await response.json();
+            listArea.innerHTML = rooms.map(room => {
+                const otherName = room.studentId === currentUserId ? room.seniorName : room.studentName;
+                const activeClass = currentChatRoom && currentChatRoom.roomId === room.roomId ? ' active' : '';
+                return `
+                    <div class="chat-room-item${activeClass}" onclick="openChatRoom('${room.roomId}')">
+                        <div style="font-weight: bold;">${escapeHtml(otherName)}</div>
+                        <div style="font-size: 12px; color: #777; margin-top: 4px;">${escapeHtml(room.lastMessage || '아직 메시지가 없습니다.')}</div>
+                        <div style="font-size: 11px; color: #999; margin-top: 6px;">${room.lastMessageAt ? new Date(room.lastMessageAt).toLocaleString() : ''}</div>
                     </div>
                 `;
-                }).join('') || "멘토 목록이 비어있습니다.";
-            }
+            }).join('') || "<div class='chat-empty'>채팅방이 없습니다. 멘토 목록에서 1:1 채팅을 시작하세요.</div>";
+        } else if (response) {
+            listArea.innerHTML = "<div class='chat-empty'>채팅방 조회에 실패했습니다.</div>";
+        }
+    }
+
+    async function openSeniorChat(seniorId) {
+        if (!seniorId || seniorId === 'undefined') {
+            showStatus('chatStatus', "선배 정보를 확인할 수 없습니다.", true);
+            return;
         }
 
-        async function applyMentoring(mentorId) {
-            const message = prompt("멘토에게 신청 메시지를 작성하세요:");
-            if (!message) return;
+        const response = await apiFetch('/api/v1/chats/rooms/senior', {
+            method: 'POST',
+            body: JSON.stringify({ seniorId })
+        });
 
-            const response = await apiFetch('/api/v1/mentoring/apply', {
-                method: 'POST',
-                body: JSON.stringify({ mentorId, message })
-            });
+        if (response && response.ok) {
+            const room = await response.json();
+            document.querySelector('[data-tab="chat"]').click();
+            renderChatRoom(room);
+            connectChatSocket(room.roomId);
+            getChatRooms();
+        } else if (response) {
+            showStatus('chatStatus', "채팅방 생성에 실패했습니다.", true);
+        }
+    }
 
-            if (response && response.ok) {
-                alert("신청이 완료되었습니다.");
-                getMyMentoring();
+    async function openChatRoom(roomId) {
+        const response = await apiFetch(`/api/v1/chats/rooms/${roomId}`);
+        if (response && response.ok) {
+            const room = await response.json();
+            currentChatRoom = room;
+            chatPage = 0;
+            renderChatRoom(room);
+            connectChatSocket(room.roomId);
+            getChatRooms();
+        } else if (response) {
+            showStatus('chatStatus', "채팅방 조회에 실패했습니다.", true);
+        }
+    }
+
+    function renderChatRoom(room) {
+        const otherName = room.studentId === currentUserId ? room.seniorName : room.studentName;
+        document.getElementById('chatTitle').innerText = `${otherName}님과의 1:1 채팅`;
+        renderChatMessages(room.messages || []);
+    }
+
+    async function loadChatMessages(isAppend = false) {
+        if (!currentChatRoom) return;
+        const response = await apiFetch(`/api/v1/chats/rooms/${currentChatRoom.roomId}/messages?page=${chatPage}&size=20`);
+        if (response && response.ok) {
+            const pageData = await response.json();
+            chatIsLast = pageData.isLast;
+            document.getElementById('chatPrevBtn').disabled = chatIsLast;
+
+            if (isAppend) {
+                const area = document.getElementById('chatMessages');
+                const oldHeight = area.scrollHeight;
+                pageData.content.reverse().forEach(m => prependChatMessage(m));
+                area.scrollTop = area.scrollHeight - oldHeight;
+            } else {
+                renderChatMessages(pageData.content);
             }
         }
+    }
 
-        async function getMyMentoring() {
-            const listArea = document.getElementById('myMentoringList');
-            listArea.innerHTML = "로딩 중...";
+    function changeChatPage(delta) {
+        chatPage += delta;
+        loadChatMessages(true);
+    }
 
-            const response = await apiFetch('/api/v1/mentoring/my-requests');
-            if (response && response.ok) {
-                const requests = await response.json();
-                listArea.innerHTML = requests.map(r => `
-                    <div class="item-card">
-                        <h4>멘토: ${r.mentorName}</h4>
-                        <div class="item-meta">상태: <b style="color:var(--primary-color)">${r.status}</b> | ${new Date(r.createdAt).toLocaleString()}</div>
-                        <p style="font-size: 13px; color: #555;">메시지: "${r.message}"</p>
+    function renderChatMessages(messages) {
+        const area = document.getElementById('chatMessages');
+        if (!messages || !messages.length) {
+            area.innerHTML = "<div class='chat-empty'>아직 메시지가 없습니다. 첫 메시지를 보내보세요.</div>";
+            return;
+        }
+        area.innerHTML = '';
+        messages.forEach(appendChatMessage);
+        area.scrollTop = area.scrollHeight;
+    }
+
+    function appendChatMessage(message) {
+        const area = document.getElementById('chatMessages');
+        const empty = area.querySelector('.chat-empty');
+        if (empty) area.innerHTML = '';
+
+        const mine = message.senderId === currentUserId;
+        const div = document.createElement('div');
+        div.className = 'chat-message' + (mine ? ' mine' : '');
+        div.innerHTML = `
+            <div class="chat-message-name">${escapeHtml(message.senderName)}</div>
+            <div style="white-space: pre-wrap;">${escapeHtml(message.content)}</div>
+            <div class="chat-message-time">${message.createdAt ? new Date(message.createdAt).toLocaleTimeString() : ''}</div>
+        `;
+        area.appendChild(div);
+        area.scrollTop = area.scrollHeight;
+    }
+
+    function prependChatMessage(message) {
+        const area = document.getElementById('chatMessages');
+        const mine = message.senderId === currentUserId;
+        const div = document.createElement('div');
+        div.className = 'chat-message' + (mine ? ' mine' : '');
+        div.innerHTML = `
+            <div class="chat-message-name">${escapeHtml(message.senderName)}</div>
+            <div style="white-space: pre-wrap;">${escapeHtml(message.content)}</div>
+            <div class="chat-message-time">${message.createdAt ? new Date(message.createdAt).toLocaleTimeString() : ''}</div>
+        `;
+        area.insertBefore(div, area.firstChild);
+    }
+
+    function connectChatSocket(roomId) {
+        disconnectChatSocket();
+        if (!accessToken || !roomId) {
+            document.getElementById('chatSocketStatus').innerText = '인증 정보가 없어 연결할 수 없습니다.';
+            return;
+        }
+
+        const protocol = location.protocol === 'https:' ? 'wss' : 'ws';
+        const socketUrl = `${protocol}://${location.host}/ws/chat?roomId=${encodeURIComponent(roomId)}&token=${encodeURIComponent(accessToken)}`;
+        chatSocket = new WebSocket(socketUrl);
+
+        chatSocket.onopen = () => {
+            document.getElementById('chatSocketStatus').innerText = '실시간 연결됨';
+            document.getElementById('chatSocketStatus').style.color = 'var(--success-color)';
+        };
+        chatSocket.onmessage = (event) => {
+            const message = JSON.parse(event.data);
+            if (message.type === 'ERROR') {
+                showStatus('chatStatus', message.message || "메시지 전송에 실패했습니다.", true);
+                return;
+            }
+            if (currentChatRoom && message.roomId === currentChatRoom.roomId) {
+                appendChatMessage(message);
+            }
+            getChatRooms();
+        };
+        chatSocket.onerror = () => {
+            document.getElementById('chatSocketStatus').innerText = 'WebSocket 연결 오류';
+            document.getElementById('chatSocketStatus').style.color = 'var(--error-color)';
+        };
+        chatSocket.onclose = () => {
+            document.getElementById('chatSocketStatus').innerText = '연결 종료';
+            document.getElementById('chatSocketStatus').style.color = '#777';
+        };
+    }
+
+    function disconnectChatSocket() {
+        if (chatSocket) {
+            chatSocket.close();
+            chatSocket = null;
+        }
+    }
+
+    function sendChatMessage() {
+        const input = document.getElementById('chatMessageInput');
+        const content = input.value.trim();
+        if (!currentChatRoom) {
+            showStatus('chatStatus', "채팅방을 먼저 선택하세요.", true);
+            return;
+        }
+        if (!content) {
+            showStatus('chatStatus', "빈 메시지는 전송할 수 없습니다.", true);
+            return;
+        }
+        if (content.length > 1000) {
+            showStatus('chatStatus', "메시지는 1000자 이하로 입력하세요.", true);
+            return;
+        }
+        if (!chatSocket || chatSocket.readyState !== WebSocket.OPEN) {
+            showStatus('chatStatus', "WebSocket이 연결되지 않았습니다.", true);
+            return;
+        }
+
+        chatSocket.send(JSON.stringify({ roomId: currentChatRoom.roomId, content }));
+        input.value = '';
+    }
+
+    // --- 5. Gamification ---
+    async function getPoints() {
+        const response = await apiFetch('/api/v1/gamification/points');
+        if (response && response.ok) {
+            const data = await response.json();
+            document.getElementById('totalPoints').innerText = data.totalPoints.toLocaleString() + " P";
+        }
+
+        const historyArea = document.getElementById('pointHistory');
+        const historyRes = await apiFetch('/api/v1/gamification/history');
+        if (historyRes && historyRes.ok) {
+            const history = await historyRes.json();
+            historyArea.innerHTML = history.map(h => `
+                <div style="display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid #eee; background: white;">
+                    <div>
+                        <div style="font-weight: bold; font-size: 14px;">${h.reasonDescription}</div>
+                        <div style="font-size: 11px; color: #999;">${new Date(h.createdAt).toLocaleString()}</div>
                     </div>
-                `).join('') || "신청 내역이 없습니다.";
-            }
-        }
-
-        // --- 4. Chat ---
-        async function getChatRooms() {
-            const listArea = document.getElementById('chatRoomList');
-            listArea.innerHTML = "<div class='loading-spinner'></div> 로딩 중...";
-
-            const response = await apiFetch('/api/v1/chats/rooms');
-            if (response && response.ok) {
-                const rooms = await response.json();
-                listArea.innerHTML = rooms.map(room => {
-                    const otherName = room.studentId === currentUserId ? room.seniorName : room.studentName;
-                    const activeClass = currentChatRoom && currentChatRoom.roomId === room.roomId ? ' active' : '';
-                    return `
-                        <div class="chat-room-item${activeClass}" onclick="openChatRoom('${room.roomId}')">
-                            <div style="font-weight: bold;">${escapeHtml(otherName)}</div>
-                            <div style="font-size: 12px; color: #777; margin-top: 4px;">${escapeHtml(room.lastMessage || '아직 메시지가 없습니다.')}</div>
-                            <div style="font-size: 11px; color: #999; margin-top: 6px;">${room.lastMessageAt ? new Date(room.lastMessageAt).toLocaleString() : ''}</div>
-                        </div>
-                    `;
-                }).join('') || "<div class='chat-empty'>채팅방이 없습니다. 멘토 목록에서 1:1 채팅을 시작하세요.</div>";
-            } else if (response) {
-                listArea.innerHTML = "<div class='chat-empty'>채팅방 조회에 실패했습니다.</div>";
-            }
-        }
-
-        async function openSeniorChat(seniorId) {
-            if (!seniorId || seniorId === 'undefined') {
-                showStatus('chatStatus', "선배 정보를 확인할 수 없습니다.", true);
-                return;
-            }
-
-            const response = await apiFetch('/api/v1/chats/rooms/senior', {
-                method: 'POST',
-                body: JSON.stringify({ seniorId })
-            });
-
-            if (response && response.ok) {
-                const room = await response.json();
-                document.querySelector('[data-tab="chat"]').click();
-                renderChatRoom(room);
-                connectChatSocket(room.roomId);
-                getChatRooms();
-            } else if (response) {
-                showStatus('chatStatus', "채팅방 생성에 실패했습니다.", true);
-            }
-        }
-
-        async function openChatRoom(roomId) {
-            const response = await apiFetch(`/api/v1/chats/rooms/${roomId}`);
-            if (response && response.ok) {
-                const room = await response.json();
-                currentChatRoom = room;
-                chatPage = 0;
-                renderChatRoom(room);
-                connectChatSocket(room.roomId);
-                getChatRooms();
-            } else if (response) {
-                showStatus('chatStatus', "채팅방 조회에 실패했습니다.", true);
-            }
-        }
-
-        function renderChatRoom(room) {
-            const otherName = room.studentId === currentUserId ? room.seniorName : room.studentName;
-            document.getElementById('chatTitle').innerText = `${otherName}님과의 1:1 채팅`;
-            renderChatMessages(room.messages || []);
-        }
-
-        async function loadChatMessages(isAppend = false) {
-            if (!currentChatRoom) return;
-            const response = await apiFetch(`/api/v1/chats/rooms/${currentChatRoom.roomId}/messages?page=${chatPage}&size=20`);
-            if (response && response.ok) {
-                const pageData = await response.json();
-                chatIsLast = pageData.isLast;
-                document.getElementById('chatPrevBtn').disabled = chatIsLast;
-                
-                if (isAppend) {
-                    const area = document.getElementById('chatMessages');
-                    const oldHeight = area.scrollHeight;
-                    pageData.content.reverse().forEach(m => prependChatMessage(m));
-                    area.scrollTop = area.scrollHeight - oldHeight;
-                } else {
-                    renderChatMessages(pageData.content);
-                }
-            }
-        }
-
-        function changeChatPage(delta) {
-            chatPage += delta;
-            loadChatMessages(true);
-        }
-
-        function renderChatMessages(messages) {
-            const area = document.getElementById('chatMessages');
-            if (!messages || !messages.length) {
-                area.innerHTML = "<div class='chat-empty'>아직 메시지가 없습니다. 첫 메시지를 보내보세요.</div>";
-                return;
-            }
-            area.innerHTML = '';
-            messages.forEach(appendChatMessage);
-            area.scrollTop = area.scrollHeight;
-        }
-
-        function appendChatMessage(message) {
-            const area = document.getElementById('chatMessages');
-            const empty = area.querySelector('.chat-empty');
-            if (empty) area.innerHTML = '';
-
-            const mine = message.senderId === currentUserId;
-            const div = document.createElement('div');
-            div.className = 'chat-message' + (mine ? ' mine' : '');
-            div.innerHTML = `
-                <div class="chat-message-name">${escapeHtml(message.senderName)}</div>
-                <div style="white-space: pre-wrap;">${escapeHtml(message.content)}</div>
-                <div class="chat-message-time">${message.createdAt ? new Date(message.createdAt).toLocaleTimeString() : ''}</div>
-            `;
-            area.appendChild(div);
-            area.scrollTop = area.scrollHeight;
-        }
-
-        function prependChatMessage(message) {
-            const area = document.getElementById('chatMessages');
-            const mine = message.senderId === currentUserId;
-            const div = document.createElement('div');
-            div.className = 'chat-message' + (mine ? ' mine' : '');
-            div.innerHTML = `
-                <div class="chat-message-name">${escapeHtml(message.senderName)}</div>
-                <div style="white-space: pre-wrap;">${escapeHtml(message.content)}</div>
-                <div class="chat-message-time">${message.createdAt ? new Date(message.createdAt).toLocaleTimeString() : ''}</div>
-            `;
-            area.insertBefore(div, area.firstChild);
-        }
-
-        function connectChatSocket(roomId) {
-            disconnectChatSocket();
-            if (!accessToken || !roomId) {
-                document.getElementById('chatSocketStatus').innerText = '인증 정보가 없어 연결할 수 없습니다.';
-                return;
-            }
-
-            const protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-            const socketUrl = `${protocol}://${location.host}/ws/chat?roomId=${encodeURIComponent(roomId)}&token=${encodeURIComponent(accessToken)}`;
-            chatSocket = new WebSocket(socketUrl);
-
-            chatSocket.onopen = () => {
-                document.getElementById('chatSocketStatus').innerText = '실시간 연결됨';
-                document.getElementById('chatSocketStatus').style.color = 'var(--success-color)';
-            };
-            chatSocket.onmessage = (event) => {
-                const message = JSON.parse(event.data);
-                if (message.type === 'ERROR') {
-                    showStatus('chatStatus', message.message || "메시지 전송에 실패했습니다.", true);
-                    return;
-                }
-                if (currentChatRoom && message.roomId === currentChatRoom.roomId) {
-                    appendChatMessage(message);
-                }
-                getChatRooms();
-            };
-            chatSocket.onerror = () => {
-                document.getElementById('chatSocketStatus').innerText = 'WebSocket 연결 오류';
-                document.getElementById('chatSocketStatus').style.color = 'var(--error-color)';
-            };
-            chatSocket.onclose = () => {
-                document.getElementById('chatSocketStatus').innerText = '연결 종료';
-                document.getElementById('chatSocketStatus').style.color = '#777';
-            };
-        }
-
-        function disconnectChatSocket() {
-            if (chatSocket) {
-                chatSocket.close();
-                chatSocket = null;
-            }
-        }
-
-        function sendChatMessage() {
-            const input = document.getElementById('chatMessageInput');
-            const content = input.value.trim();
-            if (!currentChatRoom) {
-                showStatus('chatStatus', "채팅방을 먼저 선택하세요.", true);
-                return;
-            }
-            if (!content) {
-                showStatus('chatStatus', "빈 메시지는 전송할 수 없습니다.", true);
-                return;
-            }
-            if (content.length > 1000) {
-                showStatus('chatStatus', "메시지는 1000자 이하로 입력하세요.", true);
-                return;
-            }
-            if (!chatSocket || chatSocket.readyState !== WebSocket.OPEN) {
-                showStatus('chatStatus', "WebSocket이 연결되지 않았습니다.", true);
-                return;
-            }
-
-            chatSocket.send(JSON.stringify({ roomId: currentChatRoom.roomId, content }));
-            input.value = '';
-        }
-
-        // --- 5. Gamification ---
-        async function getPoints() {
-            const response = await apiFetch('/api/v1/gamification/points');
-            if (response && response.ok) {
-                const data = await response.json();
-                document.getElementById('totalPoints').innerText = data.totalPoints.toLocaleString() + " P";
-            }
-
-            const historyArea = document.getElementById('pointHistory');
-            const historyRes = await apiFetch('/api/v1/gamification/history');
-            if (historyRes && historyRes.ok) {
-                const history = await historyRes.json();
-                historyArea.innerHTML = history.map(h => `
-                    <div style="display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid #eee; background: white;">
-                        <div>
-                            <div style="font-weight: bold; font-size: 14px;">${h.reasonDescription}</div>
-                            <div style="font-size: 11px; color: #999;">${new Date(h.createdAt).toLocaleString()}</div>
-                        </div>
-                        <div style="font-weight: bold; color: ${h.amount > 0 ? 'green' : 'red'};">
-                            ${h.amount > 0 ? '+' : ''}${h.amount} P
-                        </div>
+                    <div style="font-weight: bold; color: ${h.amount > 0 ? 'green' : 'red'};">
+                        ${h.amount > 0 ? '+' : ''}${h.amount} P
                     </div>
-                `).join('') || "히스토리가 없습니다.";
-            }
+                </div>
+            `).join('') || "히스토리가 없습니다.";
         }
+    }
 
-        // --- 5. Report ---
-        function reportItem(type, id) {
-            document.querySelector('[data-tab="report"]').click();
-            document.getElementById('reportTargetType').value = type;
-            document.getElementById('reportTargetId').value = id;
-            document.getElementById('reportDescription').focus();
+    // --- 5. Report ---
+    function reportItem(type, id) {
+        document.querySelector('[data-tab="report"]').click();
+        document.getElementById('reportTargetType').value = type;
+        document.getElementById('reportTargetId').value = id;
+        document.getElementById('reportDescription').focus();
+    }
+
+    async function submitReport() {
+        const payload = {
+            targetType: document.getElementById('reportTargetType').value,
+            targetId: document.getElementById('reportTargetId').value,
+            reason: document.getElementById('reportReason').value,
+            description: document.getElementById('reportDescription').value
+        };
+
+        const response = await apiFetch('/api/v1/reports', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+        });
+
+        if (response && response.ok) {
+            showStatus('reportStatus', "✅ 신고가 접수되었습니다.");
+            document.getElementById('reportTargetId').value = '';
+            document.getElementById('reportDescription').value = '';
+        } else if (response) {
+            showStatus('reportStatus', "❌ 신고 실패", true);
         }
+    }
 
-        async function submitReport() {
-            const payload = {
-                targetType: document.getElementById('reportTargetType').value,
-                targetId: document.getElementById('reportTargetId').value,
-                reason: document.getElementById('reportReason').value,
-                description: document.getElementById('reportDescription').value
-            };
+    // --- 6. System ---
+    async function testEmail() {
+        const to = document.getElementById('testEmailAddr').value;
+        if (!to) { alert("이메일을 입력하세요."); return; }
 
-            const response = await apiFetch('/api/v1/reports', {
-                method: 'POST',
-                body: JSON.stringify(payload)
-            });
+        showStatus('emailStatus', "⏳ 발송 요청 중...");
+        const response = await apiFetch(`/api/v1/test/email?to=${encodeURIComponent(to)}`, { method: 'POST' });
 
-            if (response && response.ok) {
-                showStatus('reportStatus', "✅ 신고가 접수되었습니다.");
-                document.getElementById('reportTargetId').value = '';
-                document.getElementById('reportDescription').value = '';
-            } else if (response) {
-                showStatus('reportStatus', "❌ 신고 실패", true);
-            }
+        if (response && response.ok) {
+            showStatus('emailStatus', "✅ 발송 성공! 메일함을 확인하세요.");
+        } else if (response) {
+            showStatus('emailStatus', "❌ 발송 실패", true);
         }
-
-        // --- 6. System ---
-        async function testEmail() {
-            const to = document.getElementById('testEmailAddr').value;
-            if (!to) { alert("이메일을 입력하세요."); return; }
-
-            showStatus('emailStatus', "⏳ 발송 요청 중...");
-            const response = await apiFetch(`/api/v1/test/email?to=${encodeURIComponent(to)}`, { method: 'POST' });
-
-            if (response && response.ok) {
-                showStatus('emailStatus', "✅ 발송 성공! 메일함을 확인하세요.");
-            } else if (response) {
-                showStatus('emailStatus', "❌ 발송 실패", true);
-            }
-        }
-    </script>
+    }
+</script>
 </body>
 </html>
