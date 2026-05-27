@@ -27,6 +27,10 @@ spring:
       mail:
         smtp:
           auth: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+          debug: true
           ssl:
             enable: true
             trust: smtp.naver.com
