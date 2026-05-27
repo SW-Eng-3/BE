@@ -53,3 +53,4 @@ springdoc:
 custom:
   env-name: "Production Mode"
   debug-mode: false
+  site-url: "https://be-y7hs.onrender.com"
