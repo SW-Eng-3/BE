@@ -52,6 +52,13 @@ public class MentoringController {
         return ResponseEntity.ok(mentoringService.getMyRequests(userId));
     }
 
+    @Operation(summary = "받은 신청 목록 조회", description = "멘토가 자신에게 온 멘토링 신청 목록을 조회합니다.")
+    @GetMapping("/incoming-requests")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('MENTOR') or hasRole('GRADUATE') or hasRole('PROFESSOR') or hasRole('ADMIN')")
+    public ResponseEntity<List<MentoringDto.Response>> getIncomingRequests(@AuthenticationPrincipal UUID userId) {
+        return ResponseEntity.ok(mentoringService.getMentorRequests(userId));
+    }
+
     @Operation(summary = "면담 신청 취소", description = "멘티가 신청한 멘토링을 취소합니다.")
     @DeleteMapping("/{requestId}/cancel")
     public ResponseEntity<Void> cancelMentoring(@AuthenticationPrincipal UUID userId, @PathVariable UUID requestId) {

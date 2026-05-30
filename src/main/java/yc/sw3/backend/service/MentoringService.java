@@ -103,6 +103,23 @@ public class MentoringService {
                 .collect(Collectors.toList());
     }
 
+    public List<MentoringDto.Response> getMentorRequests(UUID mentorId) {
+        User mentor = userRepository.findById(mentorId)
+                .orElseThrow(() -> new IllegalArgumentException("멘토를 찾을 수 없습니다."));
+        return mentoringRequestRepository.findAllByMentor(mentor).stream()
+                .map(m -> MentoringDto.Response.builder()
+                        .id(m.getId())
+                        .mentorId(m.getMentor().getId())
+                        .mentorName(m.getMentor().getName())
+                        .menteeId(m.getMentee().getId())
+                        .menteeName(m.getMentee().getName())
+                        .message(m.getMessage())
+                        .status(m.getStatus())
+                        .createdAt(m.getCreatedAt())
+                        .build())
+                .collect(Collectors.toList());
+    }
+
     @Transactional
     public void cancelMentoring(UUID userId, UUID requestId) {
         MentoringRequest mentoringRequest = mentoringRequestRepository.findById(requestId)
