@@ -8,5 +8,6 @@ import java.util.UUID;
 
 public interface MentoringRequestRepository extends JpaRepository<MentoringRequest, UUID> {
     List<MentoringRequest> findAllByMentee(User mentee);
+    List<MentoringRequest> findAllByMentor(User mentor);
     List<MentoringRequest> findAllByStatusAndCreatedAtBefore(MentoringStatus status, LocalDateTime limit);
 }

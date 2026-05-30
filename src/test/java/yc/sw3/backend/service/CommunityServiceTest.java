@@ -70,7 +70,7 @@ class CommunityServiceTest {
     @Test
     @DisplayName("게시글 목록 페이징 및 검색 조회 성공")
     void getPosts_Success() {
-        PostCategory category = PostCategory.QNA;
+        PostCategory category = PostCategory.QA;
         String keyword = "검색어";
         Pageable pageable = PageRequest.of(0, 10);
         

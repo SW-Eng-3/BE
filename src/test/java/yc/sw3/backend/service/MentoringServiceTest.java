@@ -90,4 +90,26 @@ class MentoringServiceTest {
         verify(gamificationService, times(1)).awardPoints(eq(mentor.getId()), eq(50), any());
         verify(gamificationService, times(1)).awardPoints(eq(mentee.getId()), eq(10), any());
     }
+
+    @Test
+    @DisplayName("멘토에게 온 신청 목록 조회")
+    void getMentorRequests_Success() {
+        MentoringRequest request = MentoringRequest.builder()
+                .id(UUID.randomUUID())
+                .mentee(mentee)
+                .mentor(mentor)
+                .message("Test message")
+                .status(MentoringStatus.REQUESTED)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        given(userRepository.findById(mentor.getId())).willReturn(Optional.of(mentor));
+        given(mentoringRequestRepository.findAllByMentor(mentor)).willReturn(java.util.List.of(request));
+
+        java.util.List<MentoringDto.Response> responses = mentoringService.getMentorRequests(mentor.getId());
+
+        assertThat(responses).hasSize(1);
+        assertThat(responses.get(0).getMenteeName()).isEqualTo(mentee.getName());
+        assertThat(responses.get(0).getMessage()).isEqualTo("Test message");
+    }
 }
