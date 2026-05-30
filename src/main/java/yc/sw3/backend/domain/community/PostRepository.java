@@ -13,7 +13,7 @@ public interface PostRepository extends JpaRepository<Post, UUID> {
     Page<Post> findByCategoryOrderByCreatedAtDesc(PostCategory category, Pageable pageable);
 
     @Query("SELECT p FROM Post p WHERE (:category IS NULL OR p.category = :category) " +
-           "AND (:keyword IS NULL OR LOWER(p.title) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
-           "OR LOWER(p.content) LIKE LOWER(CONCAT('%', :keyword, '%')))")
+           "AND (:keyword IS NULL OR LOWER(p.title) LIKE LOWER(CONCAT('%', CAST(:keyword AS string), '%')) " +
+           "OR LOWER(p.content) LIKE LOWER(CONCAT('%', CAST(:keyword AS string), '%')))")
     Page<Post> searchPosts(@Param("category") PostCategory category, @Param("keyword") String keyword, Pageable pageable);
 }

@@ -2,6 +2,8 @@ package yc.sw3.backend.domain.community;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import yc.sw3.backend.domain.user.User;
@@ -27,9 +29,11 @@ public class Post {
     private User author;
 
     @Column(nullable = false)
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     private String title;
 
     @Column(columnDefinition = "TEXT", nullable = false)
+    @JdbcTypeCode(SqlTypes.LONGVARCHAR)
     private String content;
 
     @Enumerated(EnumType.STRING)

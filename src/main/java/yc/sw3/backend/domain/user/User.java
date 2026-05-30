@@ -2,6 +2,8 @@ package yc.sw3.backend.domain.user;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -22,12 +24,14 @@ public class User {
     private UUID id;
 
     @Column(unique = true, nullable = false)
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     private String email;
 
     @Column(nullable = false)
     private String password;
 
     @Column(nullable = false)
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     private String name;
 
     @Enumerated(EnumType.STRING)

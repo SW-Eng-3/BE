@@ -2,6 +2,8 @@ package yc.sw3.backend.domain.mentoring;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import yc.sw3.backend.domain.user.User;
@@ -34,6 +36,7 @@ public class MentoringRequest {
     private MentoringStatus status;
 
     @Column(columnDefinition = "TEXT")
+    @JdbcTypeCode(SqlTypes.LONGVARCHAR)
     private String message;
 
     @CreatedDate
