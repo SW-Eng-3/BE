@@ -21,9 +21,15 @@ EXPOSE 10000
 COPY --from=build /home/gradle/src/build/libs/*.jar app.jar
 
 # Render(512MB 플랜) 최적화 JVM 옵션 적용
-# -XX:MaxRAMPercentage: 컨테이너 메모리의 75%까지 JVM이 사용하도록 설정
-ENTRYPOINT ["java", \
-            "-Dspring.profiles.active=prod", \
-            "-Dserver.port=${PORT:8080}", \
-            "-XX:MaxRAMPercentage=75.0", \
-            "-jar", "app.jar"]
+# - Dserver.port=${PORT:-10000}: Render의 PORT 환경 변수 사용, 기본값 10000
+# - Dserver.address=0.0.0.0: 모든 인터페이스에서 수신
+# - Xmx256m -Xms256m: 512MB 환경에서 힙 메모리를 256MB로 제한하여 Metaspace 등 여유 공간 확보
+# - XX:+UseParallelGC: 메모리가 적은 환경에서 효율적인 GC 사용
+ENTRYPOINT ["sh", "-c", "java \
+            -Dspring.profiles.active=prod \
+            -Dserver.port=${PORT:-10000} \
+            -Dserver.address=0.0.0.0 \
+            -Xmx256m \
+            -Xms256m \
+            -XX:+UseParallelGC \
+            -jar app.jar"]
