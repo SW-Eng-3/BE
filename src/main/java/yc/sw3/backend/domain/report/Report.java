@@ -2,6 +2,8 @@ package yc.sw3.backend.domain.report;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import yc.sw3.backend.domain.user.User;
@@ -38,6 +40,7 @@ public class Report {
     private ReportReason reason;
 
     @Column(columnDefinition = "TEXT")
+    @JdbcTypeCode(SqlTypes.LONGVARCHAR)
     private String description;
 
     @Enumerated(EnumType.STRING)

@@ -2,6 +2,8 @@ package yc.sw3.backend.domain.user;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
@@ -27,13 +29,18 @@ public class Profile {
 
     @Enumerated(EnumType.STRING)
     private Major major;
+    
+    @JdbcTypeCode(SqlTypes.VARCHAR)
     private String currentCompany;
+    
     @Enumerated(EnumType.STRING)
     private JobCategory jobCategory;
+    
     @Enumerated(EnumType.STRING)
     private Country country;
     
     @Column(columnDefinition = "TEXT")
+    @JdbcTypeCode(SqlTypes.LONGVARCHAR)
     private String bio;
 
     @Builder.Default
