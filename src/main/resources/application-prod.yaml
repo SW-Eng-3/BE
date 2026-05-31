@@ -24,22 +24,9 @@ spring:
         format_sql: false
         show_sql: false
 
-  mail:
-    host: smtp.gmail.com
-    port: 587
-    username: ${GMAIL_EMAIL}
-    password: ${GMAIL_PASSWORD}
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
-            required: true
-          connectiontimeout: 5000
-          timeout: 5000
-          writetimeout: 5000
-          debug: true
+resend:
+  api-key: ${RESEND_API_KEY}
+  from-email: ${RESEND_FROM_EMAIL:onboarding@resend.dev}
 
 #springdoc:
 #  swagger-ui:
