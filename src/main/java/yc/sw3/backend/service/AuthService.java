@@ -27,7 +27,7 @@ public class AuthService {
 
     @Transactional
     public void sendCode(String email) {
-        if (!email.endsWith("@yc.ac.kr") && !email.equals("rla005@naver.com")) {
+        if (!email.endsWith("@yc.ac.kr") && !email.equals("rla030526@gmail.com")) {
             throw new IllegalArgumentException("허용되지 않은 이메일 주소입니다.");
         }
         String code = String.valueOf((int)(Math.random() * 899999) + 100000);
@@ -59,7 +59,7 @@ public class AuthService {
 
     @Transactional
     public void signup(AuthDto.SignupRequest request) {
-        if (!request.getEmail().endsWith("@yc.ac.kr") && !request.getEmail().equals("rla005@naver.com")) {
+        if (!request.getEmail().endsWith("@yc.ac.kr") && !request.getEmail().equals("rla030526@gmail.com")) {
             throw new IllegalArgumentException("허용되지 않은 이메일 주소입니다.");
         }
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
