@@ -26,19 +26,22 @@ spring:
 
   mail:
     host: smtp.naver.com
-    port: 587
+    port: 465
     username: ${NAVER_EMAIL}
     password: ${NAVER_PASSWORD}
     properties:
       mail:
         smtp:
           auth: true
-          starttls:
-            enable: true
-            required: true
           ssl:
-            enable: false
+            enable: true
             trust: smtp.naver.com
+          starttls:
+            enable: false
+          socketFactory:
+            class: javax.net.ssl.SSLSocketFactory
+            fallback: false
+            port: 465
           connectiontimeout: 5000
           timeout: 5000
           writetimeout: 5000
