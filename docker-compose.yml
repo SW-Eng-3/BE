@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  # Redis 데이터베이스 서비스
+  redis:
+    image: redis:alpine
+    container_name: sweng3-redis
+    ports:
+      - "6379:6379"
+    restart: always
+
+  # Spring Boot 백엔드 서비스
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sweng3-backend
+    ports:
+      - "8080:10000" # 외부 포트 8080을 컨테이너 내부 10000(Dockerfile의 포트)에 매핑
+    environment:
+      - spring.profiles.active=local
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - SUPABASE_DB_URL=jdbc:postgresql://aws-1-ap-northeast-2.pooler.supabase.com:6543/postgres
+      - SUPABASE_DB_USERNAME=postgres.mlqqalryngjncvzqjkeo
+      - SUPABASE_DB_PASSWORD=thvmxmdnpdjrhdgkr
+      - RESEND_API_KEY=re_NfUeToGc_4DRQobqnSVoiZM3tC75BdiVm
+    depends_on:
+      - redis
+    restart: always

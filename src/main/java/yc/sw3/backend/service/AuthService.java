@@ -20,9 +20,24 @@ public class AuthService {
     private final BCryptPasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final EmailService emailService;
-    private final org.springframework.data.redis.core.StringRedisTemplate redisTemplate;
 
-    private static final String AUTH_CODE_PREFIX = "AUTH_CODE:";
+    // 인메모리 인증번호 저장소 및 만료 시간 관리용 내부 클래스
+    private static class VerificationInfo {
+        private final String code;
+        private final java.time.LocalDateTime expiresAt;
+
+        public VerificationInfo(String code, long expirationMinutes) {
+            this.code = code;
+            this.expiresAt = java.time.LocalDateTime.now().plusMinutes(expirationMinutes);
+        }
+
+        public boolean isExpired() {
+            return java.time.LocalDateTime.now().isAfter(expiresAt);
+        }
+    }
+
+    private final java.util.Map<String, VerificationInfo> verificationStore = new java.util.concurrent.ConcurrentHashMap<>();
+
     private static final long AUTH_CODE_EXPIRATION_MINUTES = 5;
 
     @Transactional
@@ -32,26 +47,23 @@ public class AuthService {
         }
         String code = String.valueOf((int)(Math.random() * 899999) + 100000);
         
-        redisTemplate.opsForValue().set(
-                AUTH_CODE_PREFIX + email,
-                code,
-                java.time.Duration.ofMinutes(AUTH_CODE_EXPIRATION_MINUTES)
-        );
+        verificationStore.put(email, new VerificationInfo(code, AUTH_CODE_EXPIRATION_MINUTES));
 
         emailService.sendVerificationCode(email, code);
     }
 
     @Transactional
     public boolean verifyCode(String email, String code) {
-        String savedCode = redisTemplate.opsForValue().get(AUTH_CODE_PREFIX + email);
+        VerificationInfo info = verificationStore.get(email);
         
-        if (savedCode == null) {
+        if (info == null || info.isExpired()) {
+            verificationStore.remove(email);
             return false;
         }
 
-        boolean isValid = savedCode.equals(code);
+        boolean isValid = info.code.equals(code);
         if (isValid) {
-            redisTemplate.delete(AUTH_CODE_PREFIX + email);
+            verificationStore.remove(email);
             userRepository.findByEmail(email).ifPresent(User::verify);
         }
         return isValid;
