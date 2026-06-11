@@ -42,10 +42,6 @@ class AuthServiceTest {
     private JwtTokenProvider jwtTokenProvider;
     @Mock
     private EmailService emailService;
-    @Mock
-    private StringRedisTemplate redisTemplate;
-    @Mock
-    private ValueOperations<String, String> valueOperations;
 
     private User user;
 
@@ -111,15 +107,17 @@ class AuthServiceTest {
     @Test
     @DisplayName("이메일 인증 코드 검증 성공")
     void verifyCode_Success() {
-        String email = "test@example.com";
-        String code = "123456";
+        String email = "test@yc.ac.kr";
 
-        given(redisTemplate.opsForValue()).willReturn(valueOperations);
-        given(valueOperations.get("AUTH_CODE:" + email)).willReturn(code);
+        org.mockito.ArgumentCaptor<String> codeCaptor = org.mockito.ArgumentCaptor.forClass(String.class);
 
-        boolean result = authService.verifyCode(email, code);
+        authService.sendCode(email);
+
+        verify(emailService, times(1)).sendVerificationCode(eq(email), codeCaptor.capture());
+        String generatedCode = codeCaptor.getValue();
+
+        boolean result = authService.verifyCode(email, generatedCode);
 
         assertThat(result).isTrue();
-        verify(redisTemplate, times(1)).delete("AUTH_CODE:" + email);
     }
 }
