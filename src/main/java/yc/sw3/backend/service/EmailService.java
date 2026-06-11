@@ -68,6 +68,7 @@ public class EmailService {
         }
     }
 
+    @Async
     public void sendVerificationCode(String toEmail, String code) {
         String title = "안녕하세요! Grad-Link 가입을 진심으로 환영합니다.";
         String body = "아래의 인증 번호를 가입 화면에 입력하여 이메일 인증을 완료해 주세요.";
